@@ -1,0 +1,32 @@
+# Python caches
+__pycache__/
+*.pyc
+.env
+
+# Virtual Environments
+ml/fireenv/
+venv/
+env/
+
+# Datasets and Weights
+ml/dataset/
+ml/Manual/
+*.pt
+
+# Unnecessary Scripts
+ml/Old/
+ml/check_paths.py
+
+# IDE / Editor Files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Arduino Build Files
+iot/**/build/
+iot/**/.build/

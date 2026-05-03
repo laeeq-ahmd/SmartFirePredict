@@ -1,0 +1,63 @@
+/* theme.css — Dark Theme Variables */
+
+:root,
+[data-theme="dark"] {
+  /* Backgrounds */
+  --bg-app:        #0d0d0d;
+  --bg-sidebar:    #111111;
+  --bg-header:     rgba(13,13,13,0.92);
+  --bg-card:       #171717;
+  --bg-card-2:     #1e1e1e;
+  --bg-input:      #0f0f0f;
+
+  /* Borders */
+  --border:        rgba(255,255,255,0.07);
+  --border-accent: rgba(255,107,0,0.35);
+
+  /* Accent (orange) */
+  --accent:        #ff6b00;
+  --accent-light:  #ff8c38;
+  --accent-glow:   rgba(255,107,0,0.30);
+  --accent-dim:    rgba(255,107,0,0.10);
+
+  /* Status colours */
+  --green:         #00e676;
+  --green-glow:    rgba(0,230,118,0.25);
+  --green-dim:     rgba(0,230,118,0.08);
+
+  --red:           #ff1744;
+  --red-glow:      rgba(255,23,68,0.25);
+  --red-dim:       rgba(255,23,68,0.08);
+
+  --yellow:        #ffc107;
+  --yellow-glow:   rgba(255,193,7,0.22);
+  --yellow-dim:    rgba(255,193,7,0.08);
+
+  /* Risk level helpers */
+  --risk-low-color:    var(--green);
+  --risk-low-glow:     var(--green-glow);
+  --risk-low-bg:       var(--green-dim);
+
+  --risk-medium-color: var(--yellow);
+  --risk-medium-glow:  var(--yellow-glow);
+  --risk-medium-bg:    var(--yellow-dim);
+
+  --risk-high-color:   var(--red);
+  --risk-high-glow:    var(--red-glow);
+  --risk-high-bg:      var(--red-dim);
+
+  /* Text */
+  --text-primary:   #f0f0f0;
+  --text-secondary: #888888;
+  --text-muted:     #444444;
+
+  /* Misc */
+  --radius:         12px;
+  --radius-sm:      8px;
+  --radius-lg:      16px;
+  --shadow:         0 4px 24px rgba(0,0,0,0.5);
+  --shadow-sm:      0 2px 10px rgba(0,0,0,0.4);
+
+  /* Sidebar */
+  --sidebar-w:      64px;
+}

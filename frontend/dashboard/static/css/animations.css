@@ -1,0 +1,52 @@
+/* animations.css — Keyframes & Transitions */
+
+/* HIGH risk banner pulse */
+@keyframes pulse-high {
+  0%, 100% { box-shadow: 0 0 20px var(--red-glow), var(--shadow); }
+  50%       { box-shadow: 0 0 50px rgba(255,23,68,0.55), 0 0 90px rgba(255,23,68,0.2), var(--shadow); }
+}
+
+/* Status dot red pulse */
+@keyframes pulse-dot-red {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,23,68,0.6); transform: scale(1); }
+  50%       { box-shadow: 0 0 0 5px rgba(255,23,68,0); transform: scale(1.1); }
+}
+
+/* Fade in for log entries */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Risk level text change */
+@keyframes riskFlash {
+  0%   { opacity: 0; transform: scale(0.92); }
+  60%  { opacity: 1; transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.risk-change-anim { animation: riskFlash 0.4s ease forwards; }
+
+/* LIVE badge blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+/* ESP32 dot pulse */
+@keyframes esp-pulse {
+  0%, 100% { box-shadow: 0 0 4px var(--green); }
+  50%       { box-shadow: 0 0 10px var(--green), 0 0 18px rgba(0,230,118,0.3); }
+}
+.esp32-dot { animation: esp-pulse 2s ease-in-out infinite; }
+
+/* Smooth global transitions */
+.card, .metric-card, .cam-panel, .alert-entry {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.4s ease;
+}
+
+/* Mini waveform (decorative SVG wave) */
+@keyframes wave-scroll {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -60; }
+}
+.wave-line { animation: wave-scroll 3s linear infinite; }

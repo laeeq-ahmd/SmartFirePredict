@@ -1,0 +1,15 @@
+# Main dataset directory path
+path: /kaggle/working/Multi-Scale-Fire-Smoke-and-Flame-Dataset
+
+# Train/validation/test images (relative to 'path')
+train: C:\Users\laeeq\Desktop\Projects\Major\Code\ML\train\images
+val: C:\Users\laeeq\Desktop\Projects\Major\Code\ML\val\images
+test: C:\Users\laeeq\Desktop\Projects\Major\Code\ML\test\images
+
+# --- Class Definition ---
+
+# Number of classes
+nc: 2
+
+# Class names in order (0: smoke, 1: fire)
+names: ['smoke', 'fire']
