@@ -1,6 +1,6 @@
 # SmartFirePredict
 
-An AI-based real-time fire and smoke detection system utilizing YOLOv10 and a multi-threaded FastAPI backend.
+An AI-based real-time fire and smoke detection system utilizing YOLO and a multi-threaded FastAPI backend.
 
 ## Project Structure
 - `backend/`: FastAPI server for RTSP capture, ML inference, and MJPEG streaming.
