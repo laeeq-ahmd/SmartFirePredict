@@ -73,7 +73,7 @@ The ESP32 streams real-time sensor data:
 
 ### Risk Score Calculation
 
-The system calculates a risk score ranging from 0 to 120.
+The system calculates a risk score ranging from 0 to 100.
 
 Additional points are awarded when physical sensors validate AI observations.
 
@@ -97,7 +97,7 @@ This fusion strategy significantly reduces false positives.
 |---------|---------|
 | 0 - 39 | Low Risk |
 | 40 - 79 | Medium Risk |
-| 80 - 120 | High Risk |
+| 80 - 100 | High Risk |
 
 ---
 
