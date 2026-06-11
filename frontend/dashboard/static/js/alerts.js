@@ -90,22 +90,46 @@ const AlertLog = (() => {
     const icon = ICONS[type] || ICONS.INFO;
     const time = _timeNow();
 
-    const entry = document.createElement('div');
-    entry.className = 'alert-entry';
-    entry.innerHTML = `
-      <span class="alert-icon">${icon}</span>
-      <span class="alert-time">${time}</span>
-      <span class="alert-msg">${_escape(message)}</span>
-    `;
+    const makeEl = () => {
+      const entry = document.createElement('div');
+      entry.className = 'alert-entry';
+      entry.innerHTML = `
+        <span class="alert-icon">${icon}</span>
+        <span class="alert-time">${time}</span>
+        <span class="alert-msg">${_escape(message)}</span>
+      `;
+      return entry;
+    };
 
-    _logEl.appendChild(entry);
+    // Primary dashboard log
+    _logEl.appendChild(makeEl());
 
-    // Enforce max entries
+    // Mirror to Full Event Log (Alerts section)
+    const fullLog = document.getElementById('alert-log-full');
+    if (fullLog) {
+      fullLog.appendChild(makeEl());
+      while (fullLog.children.length > MAX_ENTRIES) fullLog.removeChild(fullLog.firstChild);
+      fullLog.scrollTop = fullLog.scrollHeight;
+    }
+
+    // Mirror to System Logs section (Logs sidebar page)
+    const sysLog = document.getElementById('logs-section');
+    if (sysLog) {
+      const sysEntry = document.createElement('div');
+      sysEntry.className = 'alert-entry';
+      sysEntry.style.cssText = 'font-family:monospace;font-size:0.72rem;padding:4px 6px;border-radius:4px;background:var(--bg-card-2);';
+      sysEntry.innerHTML = `<span style="color:var(--text-muted)">[${time}]</span> ${icon} <span style="color:var(--text-secondary)">${_escape(message)}</span>`;
+      sysLog.appendChild(sysEntry);
+      while (sysLog.children.length > MAX_ENTRIES) sysLog.removeChild(sysLog.firstChild);
+      sysLog.scrollTop = sysLog.scrollHeight;
+    }
+
+    // Enforce max entries on primary log
     while (_logEl.children.length > MAX_ENTRIES) {
       _logEl.removeChild(_logEl.firstChild);
     }
 
-    // Auto-scroll to latest
+    // Auto-scroll primary log
     _logEl.scrollTop = _logEl.scrollHeight;
   }
 

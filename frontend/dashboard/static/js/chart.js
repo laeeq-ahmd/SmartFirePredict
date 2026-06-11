@@ -9,9 +9,10 @@ const RiskChart = (() => {
   const MAX_POINTS   = 60;   // 60 seconds of history
   const POLL_INTERVAL = 1000; // ms
 
-  let _chart    = null;
-  let _labels   = [];   // time strings
-  let _scores   = [];   // numeric risk scores
+  let _chart           = null;
+  let _analyticsChart  = null;
+  let _labels          = [];   // time strings
+  let _scores          = [];   // numeric risk scores
 
   const ZONE_COLORS = {
     low:    'rgba(0, 230, 118, 0.12)',
@@ -20,25 +21,10 @@ const RiskChart = (() => {
   };
 
   /**
-   * Initialize the Chart.js instance.
-   * Must be called after Chart.js is loaded and canvas exists.
+   * Builds the Chart.js configuration object.
    */
-  function init() {
-    const canvas = document.getElementById('risk-chart');
-    if (!canvas) {
-      console.warn('[Chart] Canvas #risk-chart not found.');
-      return;
-    }
-
-    const ctx = canvas.getContext('2d');
-
-    // Pre-fill with 60 empty points
-    for (let i = MAX_POINTS; i > 0; i--) {
-      _labels.push(_timeLabel());
-      _scores.push(null);
-    }
-
-    _chart = new Chart(ctx, {
+  function _buildChartConfig(ctx) {
+    return {
       type: 'line',
       data: {
         labels:   _labels,
@@ -80,7 +66,6 @@ const RiskChart = (() => {
               label: ctx => `Score: ${ctx.parsed.y ?? '—'}`,
             },
           },
-          // Colored zone annotations (drawn as background rectangles)
           annotation: undefined,
         },
         scales: {
@@ -119,7 +104,34 @@ const RiskChart = (() => {
         },
       },
       plugins: [_zonePlugin()],
-    });
+    };
+  }
+
+  /**
+   * Initialize the Chart.js instances.
+   */
+  function init() {
+    // Pre-fill with empty points if needed
+    if (_labels.length === 0) {
+      for (let i = MAX_POINTS; i > 0; i--) {
+        _labels.push(_timeLabel());
+        _scores.push(null);
+      }
+    }
+
+    const canvas = document.getElementById('risk-chart');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      _chart = new Chart(ctx, _buildChartConfig(ctx));
+    } else {
+      console.warn('[Chart] Canvas #risk-chart not found.');
+    }
+
+    const analyticsCanvas = document.getElementById('analytics-chart');
+    if (analyticsCanvas) {
+      const ctx2 = analyticsCanvas.getContext('2d');
+      _analyticsChart = new Chart(ctx2, _buildChartConfig(ctx2));
+    }
   }
 
   /**
@@ -127,8 +139,6 @@ const RiskChart = (() => {
    * @param {number} score - Current risk score (0–120)
    */
   function addPoint(score) {
-    if (!_chart) return;
-
     _labels.push(_timeLabel());
     _scores.push(score);
 
@@ -137,7 +147,8 @@ const RiskChart = (() => {
       _scores.shift();
     }
 
-    _chart.update('none'); // skip default animation; we handle it via tension
+    if (_chart) _chart.update('none');
+    if (_analyticsChart) _analyticsChart.update('none');
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────

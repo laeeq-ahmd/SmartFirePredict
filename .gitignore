@@ -1,27 +1,48 @@
 # Python caches
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+
+# Environment Variables
 .env
 
 # Virtual Environments
-ml/fireenv/
 venv/
 env/
+.venv/
+ML/fireenv/
 
-# Datasets and Weights
-ml/dataset/
-ml/Manual/
-*.pt
+# Datasets and ML Weights
+ML/dataset/
+ML/Manual/
+runs/
+wandb/
 
-# Unnecessary Scripts
-ml/Old/
-ml/check_paths.py
+# Unnecessary Scripts / Junk
+ML/Old/
+ML/check_paths.py
+
+# Dynamic State Files
+backend/alert_settings.json
 
 # IDE / Editor Files
 .vscode/
 .idea/
 *.swp
+*.swo
+*~
+
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+ehthumbs_vista.db
+Thumbs.db
+Desktop.ini
 
 # Logs
 *.log
@@ -30,3 +51,24 @@ logs/
 # Arduino Build Files
 iot/**/build/
 iot/**/.build/
+
+# Markdown Documentation
+SETUP.md
+TELEGRAM_SETUP.md
+TWILIO_SETUP.md
+workflow.md
+
+# Python tooling
+.pytest_cache/
+.mypy_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Build artifacts
+build/
+dist/

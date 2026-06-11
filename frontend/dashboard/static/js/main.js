@@ -1,5 +1,5 @@
 /**
- * main.js — Dashboard Orchestrator (Redesigned)
+ * main.js — Dashboard Orchestrator
  * Polls /status @ 1s, drives all dashboard components.
  */
 
@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
   AlertLog.init();
   _initDonut();
   _initCameraToggles();
+  _initSidebarNav();
+  _initSettings();
   _startPolling();
   _startUptime();
 });
@@ -31,6 +33,9 @@ function _cacheDOM() {
     'risk-level-text','risk-label-sub','risk-timestamp','risk-banner-card',
     'score-label','risk-icon',
     'sensor-flame-dot','sensor-flame-text',
+    'sensor-smoke-dot','sensor-smoke-text',
+    'sensor-flame-hw-dot','sensor-flame-hw-text',
+    'sensor-gas-dot','sensor-gas-text',
     'sensor-esp32-dot','sensor-esp32-text',
     'sensor-cam-dot','sensor-cam-text',
     'esp32-chip','esp32-header-dot','esp32-header-label',
@@ -38,10 +43,52 @@ function _cacheDOM() {
     'metric-temp','metric-humidity','metric-flame','metric-flame-status',
     'metric-smoke','metric-smoke-status','metric-uptime',
     'map-lat','map-lon','map-acc','map-speed',
+    'map-lat2','map-lon2','map-acc2','map-speed2',
     'donut-total','legend-high','legend-med','legend-low','legend-total',
-    'thermal-max-temp',
+    'thermal-max-temp','cooldown-bar',
+    'logs-section',
   ];
   ids.forEach(id => { DOM[id] = document.getElementById(id); });
+
+}
+
+// ── Sidebar Navigation ────────────────────────────────────────────────────────
+function _initSidebarNav() {
+  const navItems = document.querySelectorAll('.nav-item[data-section]');
+  const sections = document.querySelectorAll('.dash-section');
+
+  navItems.forEach(item => {
+    item.addEventListener('click', e => {
+      e.preventDefault();
+      const target = item.getAttribute('data-section');
+
+      // Toggle active class on nav items
+      navItems.forEach(n => n.classList.remove('active'));
+      item.classList.add('active');
+
+      // Show/hide sections
+      sections.forEach(sec => {
+        sec.style.display = sec.getAttribute('data-section') === target ? '' : 'none';
+      });
+
+      // Initialize + invalidate the fullscreen map when its section becomes visible
+      if (target === 'map') {
+        // Delay slightly so browser can compute layout for the newly visible section.
+        setTimeout(() => {
+          if (typeof LocationManager !== 'undefined') {
+            if (LocationManager._initFullMap) LocationManager._initFullMap();
+            if (LocationManager._invalidateMaps) LocationManager._invalidateMaps();
+          }
+        }, 100);
+        
+        setTimeout(() => {
+          if (typeof LocationManager !== 'undefined' && LocationManager._invalidateMaps) {
+            LocationManager._invalidateMaps();
+          }
+        }, 500);
+      }
+    });
+  });
 }
 
 // ── Polling ───────────────────────────────────────────────────────────────────
@@ -61,13 +108,37 @@ async function _poll() {
 
 // ── Apply status ──────────────────────────────────────────────────────────────
 function _apply(s) {
+  // Sync camera UI state with backend reality
+  if (s.camera_ok !== _cameraEnabled) {
+    _cameraEnabled = !!s.camera_ok;
+    if (_cameraEnabled) {
+      _setCamerasOnline();
+    } else {
+      _setCamerasOffline();
+    }
+  }
+
+  // Always update hardware sensor readings (ESP32 is independent of camera)
+  _updateSensors(
+    s.flame_sensor,   // AI fire
+    s.smoke_detected, // AI smoke
+    s.flame_hw,       // ESP32 hardware flame sensor (1 = flame detected)
+    s.gas,            // ESP32 gas sensor (1 = gas detected)
+    s.esp32_connected,
+    s.camera_ok
+  );
+  _updateMetrics(s.temp, s.humidity, s.flame_sensor, s.flame_hw, s.gas, s.detections);
+  _updateCooldown(s.cooldown_active, s.cooldown_remaining, s.last_sent_class);
+  AlertLog.processStatus(s);
+  _updateTwilioUI(s.twilio_enabled);
+
+  // When camera is OFF, freeze risk score and skip AI-based alerts
+  if (!_cameraEnabled) return;
+
   _updateRisk(s.risk_level, s.score, s.timestamp);
   Gauge.update(s.score, s.risk_level);
   RiskChart.addPoint(s.score);
-  _updateSensors(s.flame_sensor, s.esp32_connected, s.camera_ok);
   _updateDetections(s.detections);
-  _updateMetrics(s.flame_sensor, s.detections);
-  AlertLog.processStatus(s);
   _trackAlerts(s.risk_level);
 }
 
@@ -89,13 +160,22 @@ function _updateRisk(risk, score, ts) {
   }
 }
 
-function _updateSensors(flame, esp32, camera) {
-  _setSensor('sensor-flame-dot','sensor-flame-text', flame ? 'err':'ok', flame?'ACTIVE':'CLEAR');
-  _setSensor('sensor-esp32-dot','sensor-esp32-text', esp32?'ok':'offline', esp32?'Online':'Offline');
-  _setSensor('sensor-cam-dot',  'sensor-cam-text',   camera?'ok':'offline', camera?'Online':'Offline');
+function _updateSensors(flameAI, smokeAI, flameHW, gasHW, esp32, camera) {
+  // AI detections
+  _setSensor('sensor-flame-dot','sensor-flame-text', flameAI ? 'err':'ok',  flameAI ? 'ACTIVE':'CLEAR');
+  _setSensor('sensor-smoke-dot','sensor-smoke-text', smokeAI ? 'warn':'ok', smokeAI ? 'ACTIVE':'CLEAR');
+  // ESP32 hardware sensors (1 = triggered, 0 = clear, null = esp32 offline)
+  const hwFlameActive = flameHW === 1;
+  const hwGasActive   = gasHW   === 1;
+  _setSensor('sensor-flame-hw-dot','sensor-flame-hw-text', hwFlameActive ? 'err':'ok',  hwFlameActive ? 'FLAME!' : (esp32 ? 'CLEAR' : '—'));
+  _setSensor('sensor-gas-dot',     'sensor-gas-text',      hwGasActive   ? 'err':'ok',  hwGasActive   ? 'GAS!'  : (esp32 ? 'CLEAR' : '—'));
+  // Connectivity
+  _setSensor('sensor-esp32-dot','sensor-esp32-text', esp32  ? 'ok':'offline', esp32  ? 'Online':'Offline');
+  _setSensor('sensor-cam-dot',  'sensor-cam-text',   camera ? 'ok':'offline', camera ? 'Online':'Offline');
 
   const chip = DOM['esp32-chip'];
   if (chip) chip.className = `esp32-chip ${esp32 ? '' : 'offline'}`;
+  if (DOM['esp32-header-dot']) DOM['esp32-header-dot'].style.background = esp32 ? 'var(--green)' : 'var(--red)';
   if (DOM['esp32-header-label']) DOM['esp32-header-label'].textContent = esp32 ? 'ESP32 Online' : 'ESP32 Offline';
 }
 
@@ -113,10 +193,9 @@ function _updateDetections(dets) {
     return;
   }
   dets.forEach(det => {
-    const cls  = det.class_name || 'unknown';
-    const conf = det.confidence  || 0;
-    const pct  = Math.round(conf * 100);
-    const lower= cls.toLowerCase();
+    const cls   = det.class_name || 'unknown';
+    const conf  = det.confidence  || 0;
+    const lower = cls.toLowerCase();
     const badgeCls = lower.includes('fire')||lower.includes('flame') ? 'badge-fire' : lower.includes('smoke') ? 'badge-smoke' : 'badge-default';
     const el = document.createElement('span');
     el.className = `detection-badge ${badgeCls}`;
@@ -125,12 +204,43 @@ function _updateDetections(dets) {
   });
 }
 
-function _updateMetrics(flame, dets) {
-  const hasSmoke = dets && dets.some(d => (d.class_name||'').toLowerCase().includes('smoke'));
-  if (DOM['metric-flame']) DOM['metric-flame'].textContent = flame ? '🔥 Flame!' : 'No Flame';
-  if (DOM['metric-flame-status']) { DOM['metric-flame-status'].textContent = flame ? 'Detected!' : 'Normal'; DOM['metric-flame-status'].style.color = flame ? 'var(--red)' : 'var(--green)'; }
-  if (DOM['metric-smoke']) DOM['metric-smoke'].textContent = hasSmoke ? '💨 Smoke!' : 'No Smoke';
-  if (DOM['metric-smoke-status']) { DOM['metric-smoke-status'].textContent = hasSmoke ? 'Detected!' : 'Normal'; DOM['metric-smoke-status'].style.color = hasSmoke ? 'var(--yellow)' : 'var(--green)'; }
+function _updateMetrics(temp, humidity, flameAI, flameHW, gasHW, dets) {
+  // Combine AI + hardware for display
+  const anyFlame = flameAI || flameHW === 1;
+  const hasSmoke = gasHW === 1 || (dets && dets.some(d => (d.class_name||'').toLowerCase().includes('smoke')));
+
+  if (DOM['metric-temp'])
+    DOM['metric-temp'].textContent = temp != null ? `${temp.toFixed(1)}°C` : '—';
+  if (DOM['metric-humidity'])
+    DOM['metric-humidity'].textContent = humidity != null ? `${humidity.toFixed(2)} Δ` : '—';
+  if (DOM['metric-flame']) DOM['metric-flame'].textContent = anyFlame ? '🔥 Flame!' : 'No Flame';
+  if (DOM['metric-flame-status']) {
+    DOM['metric-flame-status'].textContent = anyFlame ? 'Detected!' : 'Normal';
+    DOM['metric-flame-status'].style.color  = anyFlame ? 'var(--red)' : 'var(--green)';
+  }
+  if (DOM['metric-smoke']) DOM['metric-smoke'].textContent = hasSmoke ? '💨 Smoke/Gas!' : 'No Smoke';
+  if (DOM['metric-smoke-status']) {
+    DOM['metric-smoke-status'].textContent = hasSmoke ? 'Detected!' : 'Normal';
+    DOM['metric-smoke-status'].style.color  = hasSmoke ? 'var(--yellow)' : 'var(--green)';
+  }
+}
+
+function _updateCooldown(active, remaining, lastClass) {
+  const bar = DOM['cooldown-bar'];
+  if (!bar) return;
+  if (active && remaining > 0) {
+    const pct = Math.round((remaining / 30) * 100);
+    const cls = lastClass === 'fire' ? 'var(--red)' : 'var(--yellow)';
+    bar.style.display = '';
+    bar.innerHTML = `
+      <span style="font-size:0.68rem;color:var(--text-muted)">📵 Telegram cooldown (${lastClass})</span>
+      <div style="flex:1;background:var(--bg-card-2);border-radius:4px;height:6px;overflow:hidden;">
+        <div style="width:${pct}%;height:100%;background:${cls};border-radius:4px;transition:width 1s linear;"></div>
+      </div>
+      <span style="font-size:0.68rem;color:var(--text-muted);white-space:nowrap;">${remaining}s</span>`;
+  } else {
+    bar.style.display = 'none';
+  }
 }
 
 // ── Uptime ────────────────────────────────────────────────────────────────────
@@ -180,7 +290,7 @@ function _initDonut() {
 function _updateDonut() {
   const total = _alertCounts.HIGH + _alertCounts.MEDIUM + _alertCounts.LOW;
   if (_donutChart) {
-    _donutChart.data.datasets[0].data = [_alertCounts.HIGH, _alertCounts.MEDIUM, _alertCounts.LOW || Math.max(1,0)];
+    _donutChart.data.datasets[0].data = [_alertCounts.HIGH, _alertCounts.MEDIUM, _alertCounts.LOW || 0];
     _donutChart.update();
   }
   if (DOM['donut-total']) DOM['donut-total'].textContent = total;
@@ -191,33 +301,141 @@ function _updateDonut() {
 }
 
 // ── Camera source toggle ──────────────────────────────────────────────────────
+let _cameraMode = 'rtsp'; // 'rtsp' | 'pccam'
+
 function _initCameraToggles() {
-  const rtsp = document.getElementById('btn-rtsp');
-  const pc   = document.getElementById('btn-pccam');
-  if (rtsp) rtsp.addEventListener('click', () => { rtsp.classList.add('active'); pc.classList.remove('active'); });
-  if (pc)   pc.addEventListener('click',   () => { pc.classList.add('active');   rtsp.classList.remove('active'); });
+  const btnRtsp  = document.getElementById('btn-rtsp');
+  const btnPc    = document.getElementById('btn-pccam');
+  const rtspCtrl = document.getElementById('rtsp-controls');
+  const pcCtrl   = document.getElementById('pccam-controls');
+
+  // Restore persisted mode
+  _cameraMode = localStorage.getItem('sfp-cam-mode') || 'rtsp';
+  _applyCameraMode(_cameraMode);
+
+  if (btnRtsp) btnRtsp.addEventListener('click', () => {
+    _cameraMode = 'rtsp';
+    localStorage.setItem('sfp-cam-mode', 'rtsp');
+    _applyCameraMode('rtsp');
+  });
+  if (btnPc) btnPc.addEventListener('click', () => {
+    _cameraMode = 'pccam';
+    localStorage.setItem('sfp-cam-mode', 'pccam');
+    _applyCameraMode('pccam');
+  });
 }
 
-// ── Utility functions (called from HTML onclick) ───────────────────────────────
-function saveRtsp() {
-  const val = document.getElementById('rtsp-input')?.value;
-  if (val) {
-    fetch(BACKEND_URL + '/set-stream', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rtsp: val })
-    }).then(() => alert(`RTSP URL saved and stream started:\n${val}`));
+function _applyCameraMode(mode) {
+  const btnRtsp  = document.getElementById('btn-rtsp');
+  const btnPc    = document.getElementById('btn-pccam');
+  const rtspCtrl = document.getElementById('rtsp-controls');
+  const pcCtrl   = document.getElementById('pccam-controls');
+
+  if (mode === 'rtsp') {
+    btnRtsp?.classList.add('active');
+    btnPc?.classList.remove('active');
+    if (rtspCtrl) rtspCtrl.style.display = 'flex';
+    if (pcCtrl)   pcCtrl.style.display   = 'none';
+  } else {
+    btnPc?.classList.add('active');
+    btnRtsp?.classList.remove('active');
+    if (pcCtrl)   pcCtrl.style.display   = 'flex';
+    if (rtspCtrl) rtspCtrl.style.display = 'none';
   }
 }
 
-function testStream() {
-  const s = document.getElementById('cam-conn-status');
-  if (s) { s.textContent = '● Testing…'; s.className = 'conn-status'; }
-  fetch(BACKEND_URL + '/use-webcam', { method: 'POST' }).then(() => {
-    if (s) { s.textContent = '● PC Cam Active'; s.className = 'conn-status connected'; }
-  }).catch(() => {
-    if (s) { s.textContent = '● Failed'; s.className = 'conn-status failed'; }
-  });
+// ── Camera ON/OFF Toggle State ────────────────────────────────────────────────
+let _cameraEnabled   = null;  // start null so first poll forces an update
+let _frozenRiskScore = null;
+
+// ── Utility functions (called from HTML onclick) ──────────────────────────────
+function saveRtsp() {
+  const val = document.getElementById('rtsp-input')?.value?.trim();
+  if (!val) return;
+  _setConnStatus('Connecting…', '');
+  fetch(BACKEND_URL + '/set-stream', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rtsp: val })
+  }).then(r => r.json()).then(d => {
+    if (d.status === 'success') {
+      _setConnStatus('RTSP Connected', 'connected');
+      _setCamerasOnline();
+    } else {
+      _setConnStatus('Failed: ' + d.message, 'failed');
+    }
+  }).catch(() => _setConnStatus('Connection Error', 'failed'));
+}
+
+// ── Shared: show/hide BOTH camera feeds together ─────────────────────────────
+function _setCamerasOffline() {
+  // Detection feed
+  const detImg  = document.getElementById('detection-img');
+  const detPh   = document.getElementById('cam-offline-placeholder');
+  if (detImg) detImg.style.display = 'none';
+  if (detPh)  detPh.style.display  = 'flex';
+
+  // Thermal feed
+  const thImg   = document.getElementById('thermal-img');
+  const thPh    = document.getElementById('thermal-offline-placeholder');
+  const thBadge = document.getElementById('thermal-live-badge');
+  if (thImg)   thImg.style.display   = 'none';
+  if (thPh)    thPh.style.display    = 'flex';
+  if (thBadge) thBadge.style.display = 'none';    // hide LIVE badge too
+}
+
+function _setCamerasOnline() {
+  const ts = Date.now(); // cache-buster for both feeds
+
+  // Detection feed — force new MJPEG connection to drop the offline JPEG
+  const detImg  = document.getElementById('detection-img');
+  const detPh   = document.getElementById('cam-offline-placeholder');
+  if (detImg) {
+    detImg.src = 'http://localhost:8000/video?t=' + ts;
+    detImg.style.display = 'block';
+  }
+  if (detPh) detPh.style.display = 'none';
+
+  // Thermal feed — force new MJPEG connection
+  const thImg   = document.getElementById('thermal-img');
+  const thPh    = document.getElementById('thermal-offline-placeholder');
+  const thBadge = document.getElementById('thermal-live-badge');
+  if (thImg) {
+    thImg.src = 'http://localhost:8000/thermal?t=' + ts;
+    thImg.style.display = 'block';
+  }
+  if (thPh)    thPh.style.display    = 'none';
+  if (thBadge) thBadge.style.display = '';
+}
+
+function startPcCam() {
+  _setConnStatus('Starting…', '');
+  fetch(BACKEND_URL + '/use-webcam', { method: 'POST' })
+    .then(r => r.json())
+    .then(d => {
+      if (d.status === 'success') {
+        _setConnStatus('PC Cam Active', 'connected');
+        _setCamerasOnline();
+      } else {
+        _setConnStatus('Failed: ' + d.message, 'failed');
+      }
+    })
+    .catch(() => _setConnStatus('Connection Error', 'failed'));
+}
+
+function stopStream() {
+  fetch(BACKEND_URL + '/stop-stream', { method: 'POST' })
+    .then(() => {
+      _setConnStatus('Stopped', '');
+      _setCamerasOffline();
+    });
+}
+
+function _setConnStatus(msg, cls) {
+  const el    = document.getElementById('cam-conn-status');
+  const label = document.getElementById('cam-conn-label');
+  if (label) label.textContent = msg;
+  if (el) el.className = 'conn-status' + (cls ? ' ' + cls : '');
 }
 
 function exportReport() {
@@ -226,4 +444,116 @@ function exportReport() {
   a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(data);
   a.download = 'sfp_report.txt';
   a.click();
+}
+
+// ── Twilio toggle ─────────────────────────────────────────────────────────────
+let _twilioEnabled = false;
+
+function toggleTwilio() {
+  fetch(BACKEND_URL + '/twilio/toggle', { method: 'POST' })
+    .then(r => r.json())
+    .then(d => _applyTwilioState(d.twilio_enabled))
+    .catch(e => console.warn('[Twilio toggle failed]', e));
+}
+
+function _applyTwilioState(enabled) {
+  _twilioEnabled = enabled;
+  const btn   = document.getElementById('twilio-toggle-btn');
+  const label = document.getElementById('twilio-status-label');
+  const bar   = document.getElementById('twilio-status');
+  
+  // Sync the settings bar checkbox
+  const settingsCb  = document.getElementById('setting-twilio');
+  const settingsLbl = document.getElementById('label-setting-twilio');
+  if (settingsCb)  settingsCb.checked    = enabled;
+  if (settingsLbl) settingsLbl.textContent = enabled ? 'ON' : 'OFF';
+
+  // Sync the settings PAGE checkbox
+  const pageCb  = document.getElementById('setting-twilio-page');
+  const pageLbl = document.getElementById('label-setting-twilio-page');
+  if (pageCb)  pageCb.checked      = enabled;
+  if (pageLbl) pageLbl.textContent = enabled ? 'ON' : 'OFF';
+
+  if (enabled) {
+    if (btn) {
+      btn.textContent      = '● ON';
+      btn.style.background = 'var(--green)';
+      btn.style.color      = '#000';
+      btn.style.boxShadow  = '0 0 8px var(--green-glow)';
+    }
+    if (label) label.textContent = 'Active';
+    if (bar)   bar.className     = 'conn-status connected';
+  } else {
+    if (btn) {
+      btn.textContent      = '● OFF';
+      btn.style.background = '#333';
+      btn.style.color      = '#777';
+      btn.style.boxShadow  = 'none';
+    }
+    if (label) label.textContent = 'Disabled';
+    if (bar)   bar.className     = 'conn-status';
+  }
+}
+
+// Called from _apply() on every status poll to keep UI in sync with backend
+function _updateTwilioUI(twilioEnabled) {
+  if (twilioEnabled !== _twilioEnabled) {
+    _applyTwilioState(twilioEnabled);
+  }
+}
+
+// ── Alert Settings ────────────────────────────────────────────────────────────
+function _initSettings() {
+  fetch(BACKEND_URL + '/settings')
+    .then(r => r.json())
+    .then(d => {
+      _applySettingUI('fire', d.fire_alerts);
+      _applySettingUI('smoke', d.smoke_alerts);
+      _applySettingUI('telegram', d.telegram_alerts);
+    })
+    .catch(e => console.warn('[Settings fetch failed]', e));
+    
+  fetch(BACKEND_URL + '/twilio/state')
+    .then(r => r.json())
+    .then(d => _applyTwilioState(d.twilio_enabled));
+}
+
+
+function updateSetting(key, value) {
+
+  const payload = {};
+  payload[key] = value;
+  
+  fetch(BACKEND_URL + '/settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.status === 'success') {
+      const s = d.settings;
+      _applySettingUI('fire', s.fire_alerts);
+      _applySettingUI('smoke', s.smoke_alerts);
+      _applySettingUI('telegram', s.telegram_alerts);
+    }
+  })
+  .catch(e => console.warn('[Settings update failed]', e));
+}
+
+function _applySettingUI(type, isEnabled) {
+  // Update both the dashboard bar and the settings page copies
+  const ids = ['setting-' + type, 'setting-' + type + '-page'];
+  const lblIds = ['label-setting-' + type, 'label-setting-' + type + '-page'];
+  ids.forEach(id => {
+    const cb = document.getElementById(id);
+    if (cb) cb.checked = isEnabled;
+  });
+  lblIds.forEach(id => {
+    const lbl = document.getElementById(id);
+    if (lbl) {
+      lbl.textContent = isEnabled ? 'Enabled' : 'Disabled';
+      lbl.style.color = isEnabled ? 'var(--text-primary)' : 'var(--text-muted)';
+    }
+  });
 }

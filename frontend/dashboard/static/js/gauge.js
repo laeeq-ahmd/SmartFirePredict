@@ -23,18 +23,26 @@ const Gauge = (() => {
 
   const MAX   = 100;
 
-  const TRACK_COLOR = '#1E2630';
-  const COLORS = {
-    LOW:    '#00E676',
-    MEDIUM: '#FFC107',
-    HIGH:   '#FF3B30',
-  };
+  // Track color read dynamically from CSS variable so it follows the theme
+  function _trackColor() {
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue('--gauge-track').trim() || 'rgba(255,255,255,0.1)';
+  }
+
+  function _arcColor(risk) {
+    const style = getComputedStyle(document.documentElement);
+    if (risk === 'LOW') return style.getPropertyValue('--risk-low-color').trim() || '#00E676';
+    if (risk === 'MEDIUM') return style.getPropertyValue('--risk-medium-color').trim() || '#FFC107';
+    if (risk === 'HIGH') return style.getPropertyValue('--risk-high-color').trim() || '#FF3B30';
+    return '#00E676';
+  }
 
   // ── State ─────────────────────────────────────────────────────────────────
   let _canvas       = null;
   let _ctx          = null;
   let _scoreEl      = null;
   let _currentScore = 0;
+  let _currentRisk  = 'LOW';
   let _animId       = null;
 
   // ── Internal draw ─────────────────────────────────────────────────────────
@@ -44,7 +52,7 @@ const Gauge = (() => {
     // 1. Background track — always full 270°
     _ctx.beginPath();
     _ctx.arc(CX, CY, R, START, START + SWEEP, false);
-    _ctx.strokeStyle = TRACK_COLOR;
+    _ctx.strokeStyle = _trackColor();
     _ctx.lineWidth   = SW;
     _ctx.lineCap     = 'round';
     _ctx.stroke();
@@ -81,7 +89,11 @@ const Gauge = (() => {
     _ctx.scale(dpr, dpr);
 
     // Draw empty gauge immediately
-    _draw(0, COLORS.LOW);
+    _draw(0, _arcColor('LOW'));
+
+    // Redraw when theme changes so track colour updates
+    new MutationObserver(() => _draw(_currentScore / MAX, _arcColor(_currentRisk)))
+      .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   }
 
   // ── Public: update ────────────────────────────────────────────────────────
@@ -89,7 +101,7 @@ const Gauge = (() => {
     if (!_ctx) return;
 
     const to    = Math.max(0, Math.min(score, MAX));
-    const color = COLORS[riskLevel] || COLORS.LOW;
+    const color = _arcColor(riskLevel);
     const from  = _currentScore;
 
     // Cancel any in-flight animation
@@ -115,6 +127,7 @@ const Gauge = (() => {
 
     _animId = requestAnimationFrame(step);
     _currentScore = to;
+    _currentRisk  = riskLevel;
   }
 
   return { init, update };
