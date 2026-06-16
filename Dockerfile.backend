@@ -61,6 +61,7 @@ COPY backend/requirements.txt ./requirements.txt
 #   pyserial          → ESP32 serial communication
 #   twilio            → Twilio REST API (optional but included for completeness)
 RUN pip install --upgrade pip --no-cache-dir \
+    && pip install torch==2.2.2 torchvision==0.17.2 --index-url https://download.pytorch.org/whl/cpu \
     && pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir \
     python-dotenv \
