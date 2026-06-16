@@ -1,0 +1,128 @@
+# =============================================================================
+# SmartFirePredict — Docker Compose (Full Project)
+# =============================================================================
+#
+# Architecture decision: 2 containers + 1 shared volume
+#
+#   ┌──────────────────────┐     HTTP proxy      ┌──────────────────────┐
+#   │   frontend (nginx)   │ ──────────────────► │   backend (FastAPI)  │
+#   │   Port 80 → 3000     │                     │   Port 8000          │
+#   │   Serves HTML/CSS/JS │                     │   YOLO inference     │
+#   │   Proxies API calls  │                     │   ESP32 serial       │
+#   └──────────────────────┘                     │   Telegram / Twilio  │
+#                                                └──────────────────────┘
+#                                                          │
+#                                               ┌──────────▼──────────┐
+#                                               │   models/ (volume)  │
+#                                               │   best.pt (~22 MB)  │
+#                                               └─────────────────────┘
+#
+# Why NOT a single container?
+#   - Separation of concerns: frontend scales independently of backend.
+#   - Nginx handles static asset caching, gzip, and MJPEG proxying
+#     far more efficiently than Python.
+#   - In AWS: ECS can run each as a separate task / service.
+#   - In Kubernetes: each becomes its own Deployment + Service.
+#
+# ESP32 Serial Note:
+#   The ESP32 connects via USB-Serial (/dev/ttyUSB0 or /dev/ttyACM0).
+#   Inside Docker, serial ports are NOT automatically accessible.
+#   You MUST pass the device to the backend container using:
+#     devices: - /dev/ttyUSB0:/dev/ttyUSB0
+#   AND the container user needs to be in the 'dialout' group.
+#   This is configured below but commented — uncomment for local use.
+#   On AWS EC2 / ECS: ESP32 cannot connect remotely; see explanation doc.
+#
+# =============================================================================
+
+services:
+
+  # ── Backend: FastAPI + YOLO ──────────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: smartfirepredict-backend
+    restart: unless-stopped
+
+    # Load all secrets from .env — NEVER hard-code secrets here
+    env_file:
+      - .env
+
+    # Additional non-secret environment overrides
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - OPENCV_FFMPEG_CAPTURE_OPTIONS=rtsp_transport;tcp
+
+    ports:
+      # Expose backend directly on 8000 for debugging.
+      # In production, remove this and let only 'frontend' proxy to it.
+      - "8000:8000"
+
+    volumes:
+      # Mount YOLO model weights from host → avoids rebuilding image on model update
+      # Uncomment the line below and comment out the COPY in Dockerfile.backend
+      # - ./backend/models:/app/backend/models:ro
+
+      # Persist alert_settings.json across container restarts
+      - alert_settings_data:/app/alert_settings_volume
+
+    # ── ESP32 Serial Port Access ──────────────────────────────────────────────
+    # UNCOMMENT these lines if the ESP32 is physically connected to this host.
+    # Find your port: `python -m serial.tools.list_ports`
+    # Common values: /dev/ttyUSB0, /dev/ttyACM0 (Linux/Mac)
+    # Windows: Docker Desktop does NOT support COM port passthrough.
+    #          You must run the backend natively on Windows for serial access.
+    #
+    # devices:
+    #   - /dev/ttyUSB0:/dev/ttyUSB0
+    # group_add:
+    #   - dialout   # Linux group for serial port access
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+    networks:
+      - sfp_network
+
+  # ── Frontend: Nginx static server + API proxy ────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: smartfirepredict-frontend
+    restart: unless-stopped
+
+    ports:
+      # Main entry point for the dashboard
+      - "3000:80"
+
+    depends_on:
+      backend:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+    networks:
+      - sfp_network
+
+# ── Named volumes ─────────────────────────────────────────────────────────────
+volumes:
+  alert_settings_data:
+    driver: local
+
+# ── Networks ──────────────────────────────────────────────────────────────────
+networks:
+  sfp_network:
+    driver: bridge
+    # In production (AWS ECS / Kubernetes), replace with external network or
+    # use service discovery instead of bridge networking.
