@@ -855,5 +855,129 @@
   margin-top: 4px;
 }
 
+/* ═══════════════════════════════════════════════════════
+   RTSP CONFIGURATION PANEL (Cameras section)
+══════════════════════════════════════════════════════════ */
+.rtsp-form-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.rtsp-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+.rtsp-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.rtsp-field {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rtsp-field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.rtsp-field::placeholder { color: var(--text-muted); }
+
+.rtsp-select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+
+.rtsp-url-preview {
+  background: var(--bg-app);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 0.75rem;
+  font-family: 'Courier New', monospace;
+  color: var(--text-muted);
+  word-break: break-all;
+  line-height: 1.4;
+  min-height: 36px;
+  transition: color 0.2s ease;
+}
+
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before { content: '▶ '; font-size: 0.65rem; }
+details[open] > summary::before { content: '▼ '; }
+
+.rtsp-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
 
 
+/* Stop button — red-toned destructive action */
+.btn-stop {
+  padding: 7px 16px;
+  background: transparent;
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--red);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.btn-stop:hover {
+  background: var(--red-dim);
+  box-shadow: 0 0 10px var(--red-glow);
+}
+
+/* Larger action buttons for the panel */
+.rtsp-form-actions .btn-save,
+.rtsp-form-actions .btn-test {
+  padding: 7px 16px;
+  font-size: 0.78rem;
+  border-radius: 8px;
+}
+
+/* Custom styled summary to prevent double arrows and look clickable */
+.rtsp-format-summary {
+  font-size: 0.75rem;
+  color: #00b4d8;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  transition: opacity 0.2s ease;
+}
+.rtsp-format-summary::-webkit-details-marker {
+  display: none;
+}
+.rtsp-format-summary::before {
+  content: none !important; /* Override the global summary::before from earlier in this file */
+}
+.rtsp-format-summary:hover {
+  opacity: 0.8;
+}

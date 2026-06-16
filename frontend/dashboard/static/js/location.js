@@ -163,16 +163,60 @@ const LocationManager = (() => {
 
     _initLeaflet();
 
+    const toggle = document.getElementById('tracking-toggle');
+    if (toggle) {
+      const savedState = localStorage.getItem('location_tracking');
+      toggle.checked = savedState === null ? true : savedState === 'true';
+      toggle.addEventListener('change', (e) => {
+        const isEnabled = e.target.checked;
+        localStorage.setItem('location_tracking', isEnabled);
+        if (isEnabled) {
+          _startTracking();
+        } else {
+          _stopTracking();
+        }
+      });
+
+      if (toggle.checked) {
+        _startTracking();
+      } else {
+        _setStatus('Location tracking disabled.');
+      }
+    } else {
+      _startTracking();
+    }
+  }
+
+  function _startTracking() {
     if (!navigator.geolocation) {
       _setStatus('Geolocation not supported by this browser.');
       return;
     }
     _setStatus('Acquiring location…');
-    _watchId = navigator.geolocation.watchPosition(
-      _onSuccess, _onError,
-      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
-    );
-    _postTimer = setInterval(_postToBackend, POST_INTERVAL);
+    if (_watchId === null) {
+      _watchId = navigator.geolocation.watchPosition(
+        _onSuccess, _onError,
+        { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+      );
+    }
+    if (_postTimer === null) {
+      _postTimer = setInterval(_postToBackend, POST_INTERVAL);
+    }
+  }
+
+  function _stopTracking() {
+    if (_watchId !== null) {
+      navigator.geolocation.clearWatch(_watchId);
+      _watchId = null;
+    }
+    if (_postTimer !== null) {
+      clearInterval(_postTimer);
+      _postTimer = null;
+    }
+    _setStatus('Location tracking disabled.');
+    if (_coordsEl) _coordsEl.textContent = '— , —';
+    if (_accuracyEl) _accuracyEl.textContent = 'Accuracy: —';
+    if (_mapsBtn) _mapsBtn.classList.add('disabled');
   }
 
   function getCoords() {

@@ -108,6 +108,12 @@ async function _poll() {
 
 // ── Apply status ──────────────────────────────────────────────────────────────
 function _apply(s) {
+  // Sync Demo Mode Badge
+  const demoBadge = document.getElementById('demo-mode-badge');
+  if (demoBadge) {
+    demoBadge.style.display = s.demo_mode ? 'flex' : 'none';
+  }
+
   // Sync camera UI state with backend reality
   if (s.camera_ok !== _cameraEnabled) {
     _cameraEnabled = !!s.camera_ok;
@@ -370,42 +376,66 @@ function saveRtsp() {
 // ── Shared: show/hide BOTH camera feeds together ─────────────────────────────
 function _setCamerasOffline() {
   // Detection feed
-  const detImg  = document.getElementById('detection-img');
-  const detPh   = document.getElementById('cam-offline-placeholder');
-  if (detImg) detImg.style.display = 'none';
-  if (detPh)  detPh.style.display  = 'flex';
+  ['detection-img', 'detection-img-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  ['cam-offline-placeholder', 'cam-offline-placeholder-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'flex';
+  });
+  const detBadge = document.getElementById('det-live-badge-2');
+  if (detBadge) detBadge.style.display = 'none';
 
   // Thermal feed
-  const thImg   = document.getElementById('thermal-img');
-  const thPh    = document.getElementById('thermal-offline-placeholder');
-  const thBadge = document.getElementById('thermal-live-badge');
-  if (thImg)   thImg.style.display   = 'none';
-  if (thPh)    thPh.style.display    = 'flex';
-  if (thBadge) thBadge.style.display = 'none';    // hide LIVE badge too
+  ['thermal-img', 'thermal-img-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  ['thermal-offline-placeholder', 'thermal-offline-placeholder-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'flex';
+  });
+  ['thermal-live-badge', 'thermal-live-badge-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
 }
 
 function _setCamerasOnline() {
   const ts = Date.now(); // cache-buster for both feeds
 
   // Detection feed — force new MJPEG connection to drop the offline JPEG
-  const detImg  = document.getElementById('detection-img');
-  const detPh   = document.getElementById('cam-offline-placeholder');
-  if (detImg) {
-    detImg.src = 'http://localhost:8000/video?t=' + ts;
-    detImg.style.display = 'block';
-  }
-  if (detPh) detPh.style.display = 'none';
+  ['detection-img', 'detection-img-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.src = 'http://localhost:8000/video?t=' + ts;
+      el.style.display = 'block';
+    }
+  });
+  ['cam-offline-placeholder', 'cam-offline-placeholder-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  const detBadge = document.getElementById('det-live-badge-2');
+  if (detBadge) detBadge.style.display = '';
 
   // Thermal feed — force new MJPEG connection
-  const thImg   = document.getElementById('thermal-img');
-  const thPh    = document.getElementById('thermal-offline-placeholder');
-  const thBadge = document.getElementById('thermal-live-badge');
-  if (thImg) {
-    thImg.src = 'http://localhost:8000/thermal?t=' + ts;
-    thImg.style.display = 'block';
-  }
-  if (thPh)    thPh.style.display    = 'none';
-  if (thBadge) thBadge.style.display = '';
+  ['thermal-img', 'thermal-img-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.src = 'http://localhost:8000/thermal?t=' + ts;
+      el.style.display = 'block';
+    }
+  });
+  ['thermal-offline-placeholder', 'thermal-offline-placeholder-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  ['thermal-live-badge', 'thermal-live-badge-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = '';
+  });
 }
 
 function startPcCam() {
@@ -428,6 +458,10 @@ function stopStream() {
     .then(() => {
       _setConnStatus('Stopped', '');
       _setCamerasOffline();
+      // Sync the Cameras section panel status if it's loaded
+      if (typeof RtspPanel !== 'undefined' && RtspPanel.onStreamStopped) {
+        RtspPanel.onStreamStopped();
+      }
     });
 }
 
@@ -510,6 +544,8 @@ function _initSettings() {
       _applySettingUI('fire', d.fire_alerts);
       _applySettingUI('smoke', d.smoke_alerts);
       _applySettingUI('telegram', d.telegram_alerts);
+      _applySettingUI('demo-mode', d.demo_mode);
+      _applyDemoModeState(d.demo_mode);
     })
     .catch(e => console.warn('[Settings fetch failed]', e));
     
@@ -536,6 +572,8 @@ function updateSetting(key, value) {
       _applySettingUI('fire', s.fire_alerts);
       _applySettingUI('smoke', s.smoke_alerts);
       _applySettingUI('telegram', s.telegram_alerts);
+      _applySettingUI('demo-mode', s.demo_mode);
+      _applyDemoModeState(s.demo_mode);
     }
   })
   .catch(e => console.warn('[Settings update failed]', e));
@@ -556,4 +594,26 @@ function _applySettingUI(type, isEnabled) {
       lbl.style.color = isEnabled ? 'var(--text-primary)' : 'var(--text-muted)';
     }
   });
+}
+
+function _applyDemoModeState(isDemoMode) {
+  const toggleIds = [
+    'setting-fire', 'setting-smoke', 'setting-telegram', 'setting-twilio',
+    'setting-fire-page', 'setting-smoke-page', 'setting-telegram-page', 'setting-twilio-page'
+  ];
+  
+  toggleIds.forEach(id => {
+    const cb = document.getElementById(id);
+    if (cb) {
+      cb.disabled = isDemoMode;
+      // Visually gray out the parent container
+      const parent = cb.closest('.toggle-row') || cb.closest('.settings-page-toggle');
+      if (parent) {
+        parent.style.opacity = isDemoMode ? '0.5' : '1';
+        parent.style.pointerEvents = isDemoMode ? 'none' : 'auto';
+      }
+    }
+  });
+
+
 }
