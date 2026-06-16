@@ -8,18 +8,18 @@ const AlertLog = (() => {
   const MAX_ENTRIES = 50;
 
   const ICONS = {
-    HIGH:   '🔴',
+    HIGH: '🔴',
     MEDIUM: '⚠️',
-    LOW:    '✅',
-    CALL:   '📞',
-    FLAME:  '🔥',
-    INFO:   'ℹ️',
+    LOW: '✅',
+    CALL: '📞',
+    FLAME: '🔥',
+    INFO: 'ℹ️',
   };
 
-  let _logEl        = null;
-  let _lastRisk     = null;   // Track risk level changes
-  let _lastFlame    = null;   // Track flame sensor changes
-  let _callLogged   = false;  // Prevent duplicate "call placed" log entries
+  let _logEl = null;
+  let _lastRisk = null;   // Track risk level changes
+  let _lastFlame = null;   // Track flame sensor changes
+  let _callLogged = false;  // Prevent duplicate "call placed" log entries
 
   /**
    * Initialize the alert log.
@@ -44,9 +44,9 @@ const AlertLog = (() => {
     // ── Risk level change ──────────────────────────────────────────────────
     if (risk_level !== _lastRisk) {
       const messages = {
-        HIGH:   'HIGH risk! Fire or flame hazard detected.',
+        HIGH: 'HIGH risk! Fire or flame hazard detected.',
         MEDIUM: 'MEDIUM risk — smoke detected. Monitoring closely.',
-        LOW:    'Risk level returned to LOW. System clear.',
+        LOW: 'Risk level returned to LOW. System clear.',
       };
       _addEntry(risk_level, messages[risk_level] || `Risk: ${risk_level}`);
 
@@ -135,7 +135,7 @@ const AlertLog = (() => {
 
   function _timeNow() {
     const d = new Date();
-    return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
   }
 
   function _escape(str) {
