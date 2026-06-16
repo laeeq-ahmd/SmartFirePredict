@@ -32,6 +32,9 @@ jobs:
           cd backend
           pytest -v tests/
 
+      - name: Create dummy .env for validation
+        run: touch .env
+
       - name: Validate Docker Compose
         run: docker compose config
 
