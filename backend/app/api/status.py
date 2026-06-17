@@ -43,9 +43,10 @@ async def get_status():
 
         # Camera
         "camera_ok": (
-            video_stream.running and
-            video_stream.capture is not None and
-            video_stream.capture.isOpened()
+            video_stream.running and (
+                video_stream.stream_url == "websocket" or
+                (video_stream.capture is not None and video_stream.capture.isOpened())
+            )
         ),
 
         # ESP32 hardware
