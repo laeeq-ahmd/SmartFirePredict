@@ -2,7 +2,14 @@ import threading
 import json
 import os
 
-SETTINGS_FILE = "alert_settings.json"
+# Path where settings are stored.
+# Inside Docker: this resolves to /app/alert_settings_volume/alert_settings.json
+#   which is a named volume (see docker-compose.yml) that persists across restarts.
+# Outside Docker (local run.py): Python creates the subdirectory automatically
+#   at backend/alert_settings_volume/alert_settings.json — no manual setup needed.
+SETTINGS_DIR  = "alert_settings_volume"
+SETTINGS_FILE = os.path.join(SETTINGS_DIR, "alert_settings.json")
+os.makedirs(SETTINGS_DIR, exist_ok=True)  # no-op if the directory already exists
 
 class AlertSettings:
     """Holds global UI settings for whether different types of alerts should fire."""

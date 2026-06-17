@@ -3,8 +3,46 @@
  * Polls /status @ 1s, drives all dashboard components.
  */
 
+// ── Backend URL Configuration ─────────────────────────────────────────────────
+// Automatically selects the correct backend URL based on the environment.
+//
+//  Environment              │ window.location          │ BACKEND_URL
+//  ─────────────────────────┼──────────────────────────┼────────────────────────
+//  Local run.py (direct)    │ localhost:8000            │ "" (relative, FastAPI
+//                           │                           │  serves the frontend)
+//  Local Live Server        │ localhost:5500            │ http://localhost:8000
+//  Local file:// open       │ file:///...               │ http://localhost:8000
+//  Local Docker (Nginx)     │ localhost:3000            │ "" (relative, Nginx
+//                           │                           │  proxies to backend)
+//  AWS / OCI cloud          │ <ip>:3000                 │ "" (relative, Nginx
+//                           │                           │  proxies to backend)
+//
+const Config = (() => {
+  const { protocol, hostname, port } = window.location;
+
+  // Case 1: Opened directly from disk (no server)
+  if (protocol === 'file:') {
+    return { backendUrl: 'http://localhost:8000' };
+  }
+
+  // Case 2: Local dev server on a non-standard port
+  // (e.g. VS Code Live Server :5500, Python http.server :8080)
+  // In these cases the frontend is on a different port from FastAPI,
+  // so we must hit FastAPI's explicit address.
+  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+  const isNonDockerPort = port !== '' && port !== '3000' && port !== '8000';
+  if (isLocalhost && isNonDockerPort) {
+    return { backendUrl: 'http://localhost:8000' };
+  }
+
+  // Case 3: Everything else — served by FastAPI directly (:8000) or Nginx
+  // (:3000 locally, any port on AWS/OCI). Use relative paths so the request
+  // goes to the same host/port serving the page, and Nginx/FastAPI handles it.
+  return { backendUrl: '' };
+})();
+
 const POLL_INTERVAL   = 1000;
-const BACKEND_URL     = 'http://localhost:8000';
+const BACKEND_URL     = Config.backendUrl;
 const STATUS_ENDPOINT = BACKEND_URL + '/status';
 
 const DOM = {};
