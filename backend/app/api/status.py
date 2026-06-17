@@ -1,6 +1,6 @@
 import time
 from fastapi import APIRouter
-from app.core.state import video_stream, detector, esp32_monitor, telegram, twilio
+from app.core.state import video_stream, detector, esp32_monitor, telegram, twilio, alert_settings
 
 router = APIRouter()
 
@@ -28,7 +28,10 @@ async def get_status():
         score      = 65
         risk_level = "MEDIUM"
 
+    demo_mode = alert_settings.get_all().get("demo_mode", False)
+
     return {
+        "demo_mode":      demo_mode,
         "score":          score,
         "risk_level":     risk_level,
         "timestamp":      time.strftime("%H:%M:%S"),
@@ -40,9 +43,10 @@ async def get_status():
 
         # Camera
         "camera_ok": (
-            video_stream.running and
-            video_stream.capture is not None and
-            video_stream.capture.isOpened()
+            video_stream.running and (
+                video_stream.stream_url == "websocket" or
+                (video_stream.capture is not None and video_stream.capture.isOpened())
+            )
         ),
 
         # ESP32 hardware

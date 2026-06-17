@@ -1,0 +1,101 @@
+# =============================================================================
+# SmartFirePredict — .dockerignore
+# =============================================================================
+# Excludes files from the Docker build context.
+# A smaller build context = faster docker build (less data sent to daemon).
+# Rules are identical to .gitignore syntax.
+#
+# CRITICAL: Exclude .env — secrets must never be baked into images.
+#           Pass secrets at runtime via --env-file or AWS Secrets Manager.
+# =============================================================================
+
+# ── Secrets (CRITICAL — never include in image) ───────────────────────────────
+.env
+*.pem
+*.key
+*.cert
+*.crt
+secrets/
+
+# ── Git metadata (not needed in image) ───────────────────────────────────────
+.git/
+.gitignore
+.github/
+
+# ── Python caches ─────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.tox/
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+venv/
+env/
+.venv/
+ML/fireenv/
+
+# ── ML Training artifacts (NOT needed for inference container) ────────────────
+# We only need backend/models/best.pt in the image.
+# All training data, raw weights, and scripts are excluded.
+ML/dataset/
+ML/Manual/
+ML/Old/
+ML/weights/
+ML/*.yaml
+ML/train.py
+ML/test.py
+ML/check_paths.py
+ML/.vscode/
+# Keep ML/*.pt? No — we copy from backend/models/ which is the production weight.
+ML/*.pt
+
+# ── IoT source (not deployable inside a container) ────────────────────────────
+iot/
+
+# ── Docs and markdown ─────────────────────────────────────────────────────────
+README.md
+SETUP.md
+TELEGRAM_SETUP.md
+TWILIO_SETUP.md
+workflow.md
+
+# ── IDE / Editor files ────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── OS generated files ────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Build artifacts ───────────────────────────────────────────────────────────
+build/
+dist/
+*.egg-info/
+
+# ── Test fixtures / notebooks ─────────────────────────────────────────────────
+*.ipynb
+.ipynb_checkpoints/
+
+# ── Docker files themselves (optional — some teams include these) ─────────────
+# Uncomment below if you don't want Dockerfiles in the image filesystem:
+# Dockerfile*
+# docker-compose*.yml
+# nginx.conf

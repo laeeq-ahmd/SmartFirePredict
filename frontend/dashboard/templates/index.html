@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,627 +13,935 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js" defer></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 </head>
+
 <body>
-<div class="app-layout">
+  <div class="app-layout">
 
-  <!-- ═══ SIDEBAR ═══ -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">🔥</div>
-    <nav class="sidebar-nav">
-      <a href="#" class="nav-item active" data-section="dashboard" id="nav-dashboard" title="Dashboard">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        <span class="nav-label">Dashboard</span>
-      </a>
-      <a href="#" class="nav-item" data-section="cameras" title="Cameras">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-        <span class="nav-label">Cameras</span>
-      </a>
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">🔥</div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-section="dashboard" id="nav-dashboard" title="Dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+          </svg>
+          <span class="nav-label">Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-section="cameras" title="Cameras">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 7l-7 5 7 5V7z" />
+            <rect x="1" y="5" width="15" height="14" rx="2" />
+          </svg>
+          <span class="nav-label">Cameras</span>
+        </a>
 
-      <a href="#" class="nav-item" data-section="alerts" title="Alerts">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        <span class="nav-label">Alerts</span>
-      </a>
-      <a href="#" class="nav-item" data-section="map" title="Map">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <span class="nav-label">Map</span>
-      </a>
-      <a href="#" class="nav-item" data-section="logs" title="Logs">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        <span class="nav-label">Logs</span>
-      </a>
-      <a href="#" class="nav-item" data-section="analytics" title="Analytics">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        <span class="nav-label">Analytics</span>
-      </a>
-    </nav>
-    <div class="sidebar-bottom">
-      <a href="#" class="nav-item" data-section="settings" title="Settings">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        <span class="nav-label">Settings</span>
-      </a>
-      <a href="#" class="nav-item" data-section="about" title="About">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <span class="nav-label">About</span>
-      </a>
-    </div>
-  </aside>
-
-  <!-- ═══ MAIN CONTENT ═══ -->
-  <div class="main-content">
-
-    <!-- HEADER -->
-    <header class="top-header">
-      <div class="header-brand">
-        <h1>SmartFirePredict</h1>
-        <p>AI &amp; IoT Fire Prediction System</p>
+        <a href="#" class="nav-item" data-section="alerts" title="Alerts">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          <span class="nav-label">Alerts</span>
+        </a>
+        <a href="#" class="nav-item" data-section="map" title="Map">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          <span class="nav-label">Map</span>
+        </a>
+        <a href="#" class="nav-item" data-section="logs" title="Logs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+          <span class="nav-label">Logs</span>
+        </a>
+        <a href="#" class="nav-item" data-section="analytics" title="Analytics">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10" />
+            <line x1="12" y1="20" x2="12" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="14" />
+          </svg>
+          <span class="nav-label">Analytics</span>
+        </a>
+      </nav>
+      <div class="sidebar-bottom">
+        <a href="#" class="nav-item" id="nav-settings" data-section="settings" title="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          <span class="nav-label">Settings</span>
+        </a>
+        <a href="#" class="nav-item" data-section="about" title="About">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span class="nav-label">About</span>
+        </a>
       </div>
-      <div class="header-right">
-        <div class="esp32-chip" id="esp32-chip">
-          <span class="esp32-dot" id="esp32-header-dot"></span>
-          <span id="esp32-header-label">ESP32 Online</span>
-        </div>
-        <button class="icon-btn" id="theme-toggle-btn" title="Switch to Light Mode">☀️</button>
-      </div>
-    </header>
+    </aside>
 
-    <!-- COOLDOWN BAR -->
-    <div id="cooldown-bar" style="display:none;align-items:center;gap:10px;padding:5px 20px;background:var(--bg-card);border-bottom:1px solid var(--border);"></div>
+    <!-- ═══ MAIN CONTENT ═══ -->
+    <div class="main-content">
 
-    <!-- DASHBOARD -->
-    <main class="dashboard" role="main">
-    <div class="dash-section" data-section="dashboard">
-
-      <!-- STATUS ROW -->
-      <div class="status-row">
-
-        <!-- Card 1: Risk Banner -->
-        <div class="card risk-card banner-LOW" id="risk-banner-card" aria-live="assertive">
+      <!-- HEADER -->
+      <header class="top-header">
+        <div class="header-brand" style="display:flex;align-items:center;gap:15px;">
           <div>
-            <div id="risk-level-text" class="risk-LOW">LOW</div>
-            <div id="risk-label-sub">System Clear — No Threats</div>
-            <div id="risk-timestamp">Updated: —</div>
+            <h1>SmartFirePredict</h1>
+            <p>AI &amp; IoT Fire Prediction System</p>
           </div>
-          <div>
-            <div class="risk-shield-icon" id="risk-icon">🛡</div>
-          </div>
-        </div>
-
-        <!-- Card 2: Risk Score (Canvas gauge — no SVG tricks) -->
-        <div class="card score-card">
-          <div class="card-title">RISK SCORE</div>
-          <div class="gauge-wrap">
-            <canvas id="gauge-canvas"></canvas>
-            <div class="gauge-center-text">
-              <span id="gauge-score-text" class="gauge-num">0</span>
-              <span id="gauge-label-text" class="gauge-sub">/100</span>
-            </div>
-          </div>
-          <div class="score-label LOW" id="score-label">LOW RISK</div>
-        </div>
-
-        <!-- Card 3: System Status -->
-        <div class="card">
-          <div class="card-title">System Status</div>
-          <div class="sys-status-list">
-            <div class="sys-row">
-              <span class="sys-row-name">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C9.5 6 5 9 5 14a7 7 0 0 0 14 0c0-5-4.5-8-7-12z"/></svg>
-                Fire (AI)
-              </span>
-              <span class="sys-badge">
-                <span class="sys-dot ok" id="sensor-flame-dot"></span>
-                <span id="sensor-flame-text">CLEAR</span>
-              </span>
-            </div>
-            <div class="sys-row">
-              <span class="sys-row-name">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/></svg>
-                Smoke (AI)
-              </span>
-              <span class="sys-badge">
-                <span class="sys-dot ok" id="sensor-smoke-dot"></span>
-                <span id="sensor-smoke-text">CLEAR</span>
-              </span>
-            </div>
-            <div class="sys-row">
-              <span class="sys-row-name">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C9.5 6 5 9 5 14a7 7 0 0 0 14 0c0-5-4.5-8-7-12z"/></svg>
-                Flame (HW)
-              </span>
-              <span class="sys-badge">
-                <span class="sys-dot ok" id="sensor-flame-hw-dot"></span>
-                <span id="sensor-flame-hw-text">—</span>
-              </span>
-            </div>
-            <div class="sys-row">
-              <span class="sys-row-name">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-                Gas (HW)
-              </span>
-              <span class="sys-badge">
-                <span class="sys-dot ok" id="sensor-gas-dot"></span>
-                <span id="sensor-gas-text">—</span>
-              </span>
-            </div>
-            <div class="sys-row">
-              <span class="sys-row-name">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-                ESP32
-              </span>
-              <span class="sys-badge">
-                <span class="sys-dot offline" id="sensor-esp32-dot"></span>
-                <span id="sensor-esp32-text">Offline</span>
-              </span>
-            </div>
-            <div class="sys-row">
-              <span class="sys-row-name">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-                Cameras
-              </span>
-              <span class="sys-badge">
-                <span class="sys-dot offline" id="sensor-cam-dot"></span>
-                <span id="sensor-cam-text">Offline</span>
-              </span>
-            </div>
+          <div id="demo-mode-badge"
+            style="display:none;background:var(--red-dim);border:1px solid var(--red);color:var(--red);padding:4px 8px;border-radius:4px;font-size:0.7rem;font-weight:700;letter-spacing:0.05em;align-items:center;gap:6px;">
+            <span style="font-size:0.8rem;"></span> DEMO MODE: TELEGRAM & TWILIO ALERTS DISABLED (Scroll down to turn
+            off demo)
           </div>
         </div>
-
-        <!-- Card 4: Location Live -->
-        <div class="card location-card">
-          <div class="live-badge">LIVE</div>
-          <div id="location-coords" class="loc-coords">— , —</div>
-          <div id="location-accuracy" class="loc-accuracy">Accuracy: —</div>
-          <div id="location-status" class="loc-status">Acquiring location…</div>
-          <div class="loc-mini-map">
-            <div id="mini-map"></div>
+        <div class="header-right">
+          <div class="esp32-chip" id="esp32-chip">
+            <span class="esp32-dot" id="esp32-header-dot"></span>
+            <span id="esp32-header-label">ESP32 Online</span>
           </div>
+          <button class="icon-btn" id="theme-toggle-btn" title="Switch to Light Mode">☀️</button>
         </div>
+      </header>
 
-      </div><!-- /status-row -->
-
-      <!-- CAMERA SOURCE CONTROL -->
-      <div class="camera-source-bar">
-        <span class="cam-source-label">Source</span>
-        <div class="toggle-group">
-          <button class="toggle-btn active" id="btn-rtsp">RTSP Stream</button>
-          <button class="toggle-btn" id="btn-pccam">PC Camera</button>
-        </div>
-        <!-- RTSP controls — shown when RTSP mode active -->
-        <div id="rtsp-controls" style="display:flex;align-items:center;gap:8px;flex:1;">
-          <input class="rtsp-input" id="rtsp-input" type="text"
-            placeholder="rtsp://user:pass@192.168.1.1:554/stream" />
-          <button class="btn-save" id="btn-save-rtsp" onclick="saveRtsp()">Save &amp; Connect</button>
-        </div>
-        <!-- PC Camera controls — shown when PC Camera mode active -->
-        <div id="pccam-controls" style="display:none;align-items:center;gap:8px;">
-          <button class="btn-save" id="btn-start-pccam" onclick="startPcCam()">Start Camera</button>
-          <button class="btn-test" id="btn-stop-stream" onclick="stopStream()">Stop</button>
-        </div>
-        <div class="conn-status" id="cam-conn-status">
-          <span>●</span> <span id="cam-conn-label">Idle</span>
-        </div>
+      <!-- COOLDOWN BAR -->
+      <div id="cooldown-bar"
+        style="display:none;align-items:center;gap:10px;padding:5px 20px;background:var(--bg-card);border-bottom:1px solid var(--border);">
       </div>
 
-      <!-- TWILIO CALLS TOGGLE BAR -->
-      <div class="camera-source-bar" style="gap:14px;">
-        <!-- Phone icon -->
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.6;flex-shrink:0;">
-          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.56 3.44 2 2 0 0 1 3.54 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.72A16 16 0 0 0 16 16.73l.88-.88a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-        </svg>
-        <span class="cam-source-label">Twilio Calls</span>
-        <!-- ON/OFF toggle pill -->
-        <button id="twilio-toggle-btn" onclick="toggleTwilio()"
-          style="padding:4px 14px;border-radius:20px;border:none;font-size:0.7rem;font-weight:700;
+      <!-- DASHBOARD -->
+      <main class="dashboard" role="main">
+        <div class="dash-section" data-section="dashboard">
+
+          <!-- STATUS ROW -->
+          <div class="status-row">
+
+            <!-- Card 1: Risk Banner -->
+            <div class="card risk-card banner-LOW" id="risk-banner-card" aria-live="assertive">
+              <div>
+                <div id="risk-level-text" class="risk-LOW">LOW</div>
+                <div id="risk-label-sub">System Clear — No Threats</div>
+                <div id="risk-timestamp">Updated: —</div>
+              </div>
+              <div>
+                <div class="risk-shield-icon" id="risk-icon">🛡</div>
+              </div>
+            </div>
+
+            <!-- Card 2: Risk Score (Canvas gauge — no SVG tricks) -->
+            <div class="card score-card">
+              <div class="card-title">RISK SCORE</div>
+              <div class="gauge-wrap">
+                <canvas id="gauge-canvas"></canvas>
+                <div class="gauge-center-text">
+                  <span id="gauge-score-text" class="gauge-num">0</span>
+                  <span id="gauge-label-text" class="gauge-sub">/100</span>
+                </div>
+              </div>
+              <div class="score-label LOW" id="score-label">LOW RISK</div>
+            </div>
+
+            <!-- Card 3: System Status -->
+            <div class="card">
+              <div class="card-title">System Status</div>
+              <div class="sys-status-list">
+                <div class="sys-row">
+                  <span class="sys-row-name">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C9.5 6 5 9 5 14a7 7 0 0 0 14 0c0-5-4.5-8-7-12z" />
+                    </svg>
+                    Fire (AI)
+                  </span>
+                  <span class="sys-badge">
+                    <span class="sys-dot ok" id="sensor-flame-dot"></span>
+                    <span id="sensor-flame-text">CLEAR</span>
+                  </span>
+                </div>
+                <div class="sys-row">
+                  <span class="sys-row-name">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z" />
+                    </svg>
+                    Smoke (AI)
+                  </span>
+                  <span class="sys-badge">
+                    <span class="sys-dot ok" id="sensor-smoke-dot"></span>
+                    <span id="sensor-smoke-text">CLEAR</span>
+                  </span>
+                </div>
+                <div class="sys-row">
+                  <span class="sys-row-name">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2C9.5 6 5 9 5 14a7 7 0 0 0 14 0c0-5-4.5-8-7-12z" />
+                    </svg>
+                    Flame (HW)
+                  </span>
+                  <span class="sys-badge">
+                    <span class="sys-dot ok" id="sensor-flame-hw-dot"></span>
+                    <span id="sensor-flame-hw-text">—</span>
+                  </span>
+                </div>
+                <div class="sys-row">
+                  <span class="sys-row-name">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="3" />
+                      <path
+                        d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
+                    </svg>
+                    Gas (HW)
+                  </span>
+                  <span class="sys-badge">
+                    <span class="sys-dot ok" id="sensor-gas-dot"></span>
+                    <span id="sensor-gas-text">—</span>
+                  </span>
+                </div>
+                <div class="sys-row">
+                  <span class="sys-row-name">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="5" y="2" width="14" height="20" rx="2" />
+                      <line x1="12" y1="18" x2="12.01" y2="18" />
+                    </svg>
+                    ESP32
+                  </span>
+                  <span class="sys-badge">
+                    <span class="sys-dot offline" id="sensor-esp32-dot"></span>
+                    <span id="sensor-esp32-text">Offline</span>
+                  </span>
+                </div>
+                <div class="sys-row">
+                  <span class="sys-row-name">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M23 7l-7 5 7 5V7z" />
+                      <rect x="1" y="5" width="15" height="14" rx="2" />
+                    </svg>
+                    Cameras
+                  </span>
+                  <span class="sys-badge">
+                    <span class="sys-dot offline" id="sensor-cam-dot"></span>
+                    <span id="sensor-cam-text">Offline</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 4: Location Live -->
+            <div class="card location-card">
+              <div class="live-badge">LIVE</div>
+              <div id="location-coords" class="loc-coords">— , —</div>
+              <div id="location-accuracy" class="loc-accuracy">Accuracy: —</div>
+              <div id="location-status" class="loc-status">Acquiring location…</div>
+              <div class="loc-mini-map">
+                <div id="mini-map"></div>
+              </div>
+            </div>
+
+          </div><!-- /status-row -->
+
+          <div class="camera-source-bar">
+            <span class="cam-source-label">Source</span>
+            <div class="toggle-group">
+              <button class="toggle-btn active" id="btn-rtsp">RTSP Stream</button>
+              <button class="toggle-btn" id="btn-pccam">PC Camera</button>
+              <button class="toggle-btn" id="btn-brow-camera" style="display:none;">Browser Camera</button>
+            </div>
+            <!-- RTSP controls — shown when RTSP mode active -->
+            <div id="rtsp-controls" style="display:flex;align-items:center;gap:8px;flex:1;">
+              <input class="rtsp-input" id="rtsp-input" type="text"
+                placeholder="rtsp://user:pass@192.168.1.1:554/stream" />
+              <button class="btn-save" id="btn-save-rtsp" onclick="saveRtsp()">Save &amp; Connect</button>
+              <button class="btn-test" id="btn-stop-rtsp" onclick="stopStream()">Stop</button>
+            </div>
+            <!-- PC Camera controls — shown when PC Camera mode active -->
+            <div id="pccam-controls" style="display:none;align-items:center;gap:8px;">
+              <button class="btn-save" id="btn-start-pccam" onclick="startPcCam()">Start Camera</button>
+              <button class="btn-test" id="btn-stop-stream" onclick="stopStream()">Stop</button>
+            </div>
+            <!-- Browser Camera controls — shown when Browser Camera mode active -->
+            <div id="browcam-controls" style="display:none;align-items:center;gap:8px;">
+              <button class="btn-save" id="btn-start-browcam">Start Browser Camera</button>
+              <button class="btn-test" id="btn-stop-browcam">Stop</button>
+            </div>
+            <div class="conn-status" id="cam-conn-status">
+              <span>●</span> <span id="cam-conn-label">Idle</span>
+            </div>
+          </div>
+
+          <!-- TWILIO CALLS TOGGLE BAR -->
+          <div class="camera-source-bar" style="gap:14px;">
+            <!-- Phone icon -->
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              style="opacity:0.6;flex-shrink:0;">
+              <path
+                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.56 3.44 2 2 0 0 1 3.54 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.72A16 16 0 0 0 16 16.73l.88-.88a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+            <span class="cam-source-label">Twilio Calls</span>
+            <!-- ON/OFF toggle pill -->
+            <button id="twilio-toggle-btn" onclick="toggleTwilio()" style="padding:4px 14px;border-radius:20px;border:none;font-size:0.7rem;font-weight:700;
                  cursor:pointer;letter-spacing:0.06em;transition:all 0.25s ease;
                  background:#333;color:#777;box-shadow:none;">
-          ● OFF
-        </button>
-        <span style="color:#555;font-size:0.72rem;">Calls your phone when fire is detected. Disabled by default to save credits.</span>
-        <!-- Live call status indicator -->
-        <div class="conn-status" id="twilio-status" style="margin-left:auto;">
-          <span>●</span> <span id="twilio-status-label">Disabled</span>
-        </div>
-      </div>
-
-      <!-- CAMERA FEEDS -->
-      <div class="camera-section">
-
-        <!-- Thermal -->
-        <div class="cam-panel">
-          <div class="cam-panel-header">
-            <span class="cam-panel-title">Thermal Camera (Live)</span>
-            <div class="live-badge" id="thermal-live-badge">LIVE</div>
-          </div>
-          <div class="cam-feed-wrap" id="thermal-feed-wrap">
-            <img id="thermal-img" class="cam-feed" src="http://localhost:8000/thermal" alt="Thermal feed" />
-            <!-- Offline placeholder -->
-            <div id="thermal-offline-placeholder" style="display:none;width:100%;height:100%;background:#0a0a0a;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/><line x1="1" y1="1" x2="23" y2="23" stroke="#555"/></svg>
-              <span style="color:#555;font-size:0.75rem;letter-spacing:0.08em;">CAMERA OFFLINE</span>
+              ● OFF
+            </button>
+            <span style="color:#555;font-size:0.72rem;">Calls your phone when fire is detected. Disabled by default to
+              save credits.</span>
+            <!-- Live call status indicator -->
+            <div class="conn-status" id="twilio-status" style="margin-left:auto;">
+              <span>●</span> <span id="twilio-status-label">Disabled</span>
             </div>
-            <div class="cam-overlay-bottom">
-              <div class="temp-bar-wrap">
-                <span>15°C</span>
-                <div class="temp-bar"></div>
-                <span>60°C</span>
+          </div>
+
+          <!-- CAMERA FEEDS -->
+          <div class="camera-section">
+
+            <!-- Thermal -->
+            <div class="cam-panel">
+              <div class="cam-panel-header">
+                <span class="cam-panel-title">Thermal Camera (Live)</span>
+                <div class="live-badge" id="thermal-live-badge">LIVE</div>
               </div>
-              <span class="cam-max-temp" id="thermal-max-temp">Max: 38°C</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Detection -->
-        <div class="cam-panel">
-          <div class="cam-panel-header">
-            <span class="cam-panel-title">Detection Camera (Fire/Smoke)</span>
-            <button class="cam-expand-btn" title="Expand">⤢</button>
-          </div>
-          <div class="cam-feed-wrap" id="det-feed-wrap">
-            <img id="detection-img" class="cam-feed" src="http://localhost:8000/video" alt="Detection feed" />
-            <!-- Offline placeholder -->
-            <div id="cam-offline-placeholder" style="display:none;width:100%;height:100%;background:#0a0a0a;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/><line x1="1" y1="1" x2="23" y2="23" stroke="#555"/></svg>
-              <span style="color:#555;font-size:0.75rem;letter-spacing:0.08em;">CAMERA OFFLINE</span>
-            </div>
-            <div class="cam-overlay-bottom">
-              <div id="detection-list" style="display:flex;flex-direction:row;gap:5px;align-items:center;"></div>
-            </div>
-          </div>
-        </div>
-
-      </div><!-- /camera-section -->
-
-      <!-- METRICS ROW -->
-      <div class="metrics-row">
-
-        <div class="metric-card">
-          <div class="metric-header">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
-            Temperature
-          </div>
-          <div class="metric-value" id="metric-temp">—</div>
-          <div class="metric-status">Normal</div>
-          <svg class="metric-wave" viewBox="0 0 80 24" fill="none">
-            <polyline class="wave-line" stroke="#00e676" stroke-width="1.5" stroke-dasharray="80" points="0,12 10,8 20,16 30,6 40,14 50,10 60,18 70,8 80,12"/>
-          </svg>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-header">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
-            Humidity
-          </div>
-          <div class="metric-value" id="metric-humidity">—</div>
-          <div class="metric-status">Normal</div>
-          <svg class="metric-wave" viewBox="0 0 80 24" fill="none">
-            <polyline class="wave-line" stroke="#00b4d8" stroke-width="1.5" stroke-dasharray="80" points="0,14 10,10 20,16 30,8 40,12 50,6 60,14 70,10 80,14"/>
-          </svg>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-header">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C9.5 6 5 9 5 14a7 7 0 0 0 14 0c0-5-4.5-8-7-12z" fill="#ff6b00" opacity="0.8"/></svg>
-            Flame Sensor
-          </div>
-          <div class="metric-value" id="metric-flame" style="font-size:1rem;margin-top:4px;">No Flame</div>
-          <div class="metric-status" id="metric-flame-status">Normal</div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-header">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/></svg>
-            Smoke Detected
-          </div>
-          <div class="metric-value" id="metric-smoke" style="font-size:1rem;margin-top:4px;">No Smoke</div>
-          <div class="metric-status" id="metric-smoke-status">Normal</div>
-        </div>
-
-        <div class="metric-card">
-          <div class="metric-header">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            System Uptime
-          </div>
-          <div class="metric-value" id="metric-uptime">0m</div>
-          <div class="metric-status" style="color:var(--green)">Running</div>
-        </div>
-
-      </div><!-- /metrics-row -->
-
-      <!-- ANALYSIS ROW -->
-      <div class="analysis-row">
-
-        <div class="card chart-card">
-          <div class="card-title">Risk Score Timeline — Last 60 Seconds</div>
-          <select class="chart-dropdown"><option>60 Seconds</option></select>
-          <div class="chart-container">
-            <canvas id="risk-chart" role="img" aria-label="Risk score chart"></canvas>
-          </div>
-        </div>
-
-        <div class="card event-log">
-          <div class="card-title">Event Log</div>
-          <div id="alert-log" role="log" aria-live="polite"></div>
-          <a href="#" class="view-all-link">✦ View All Logs</a>
-        </div>
-
-      </div><!-- /analysis-row -->
-
-      <!-- MAP + SUMMARY ROW -->
-      <div class="map-summary-row">
-
-        <div class="card map-card">
-          <div class="card-title">Live Location Map</div>
-          <div class="map-container">
-            <div id="location-map"></div>
-          </div>
-          <div class="map-meta">
-            <div class="map-meta-item">
-              <div class="map-meta-label">Latitude</div>
-              <div class="map-meta-val" id="map-lat">—</div>
-            </div>
-            <div class="map-meta-item">
-              <div class="map-meta-label">Longitude</div>
-              <div class="map-meta-val" id="map-lon">—</div>
-            </div>
-            <div class="map-meta-item">
-              <div class="map-meta-label">Accuracy</div>
-              <div class="map-meta-val" id="map-acc">—</div>
-            </div>
-            <div class="map-meta-item">
-              <div class="map-meta-label">Speed</div>
-              <div class="map-meta-val" id="map-speed">—</div>
-            </div>
-          </div>
-          <div class="map-controls">
-            <div class="tracking-toggle">
-              <label class="pill-switch">
-                <input type="checkbox" id="tracking-toggle" checked />
-                <span class="pill-track"></span>
-              </label>
-              <span>Location Tracking</span>
-            </div>
-            <a id="btn-maps" href="#" target="_blank" rel="noopener" class="disabled">
-              📍 View in Maps
-            </a>
-          </div>
-        </div>
-
-        <div class="card summary-card">
-          <div class="card-title">Alert Summary</div>
-          <div class="donut-wrap">
-            <div class="donut-container">
-              <canvas id="alert-donut"></canvas>
-              <div class="donut-center">
-                <div class="donut-total" id="donut-total">0</div>
-                <div class="donut-total-label">Total Alerts</div>
-              </div>
-            </div>
-            <div class="donut-legend">
-              <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span> High Risk <span id="legend-high" style="margin-left:auto;font-weight:700;color:var(--text-primary)">0</span></div>
-              <div class="legend-item"><span class="legend-dot" style="background:var(--yellow)"></span> Medium Risk <span id="legend-med" style="margin-left:auto;font-weight:700;color:var(--text-primary)">0</span></div>
-              <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span> Low Risk <span id="legend-low" style="margin-left:auto;font-weight:700;color:var(--text-primary)">0</span></div>
-              <div class="legend-item" style="margin-top:4px;border-top:1px solid var(--border);padding-top:6px;"><span style="color:var(--text-muted)">Total</span> <span id="legend-total" style="margin-left:auto;font-weight:700;color:var(--text-primary)">0</span></div>
-            </div>
-          </div>
-          <button class="btn-export" onclick="exportReport()">⬇ Export Report</button>
-        </div>
-
-      </div><!-- /map-summary-row -->
-
-      <!-- ALERT SETTINGS -->
-      <div class="alert-settings-bar">
-        <span class="settings-group-label">Alert Settings</span>
-        <div class="settings-section">
-          <div class="toggle-item">
-            <span class="toggle-item-label">Fire Alert (High Risk)</span>
-            <div class="toggle-row">
-              <label class="pill-switch"><input type="checkbox" id="setting-fire" onchange="updateSetting('fire_alerts', this.checked)" checked /><span class="pill-track"></span></label>
-              <span class="pill-on-label" id="label-setting-fire">Enabled</span>
-            </div>
-          </div>
-          <div class="toggle-item">
-            <span class="toggle-item-label">Smoke Alert (Medium Risk)</span>
-            <div class="toggle-row">
-              <label class="pill-switch"><input type="checkbox" id="setting-smoke" onchange="updateSetting('smoke_alerts', this.checked)" checked /><span class="pill-track"></span></label>
-              <span class="pill-on-label" id="label-setting-smoke">Enabled</span>
-            </div>
-          </div>
-        </div>
-        <div class="settings-divider"></div>
-        <span class="settings-group-label">Twilio Alerts</span>
-        <div class="settings-section">
-          <div class="toggle-item">
-            <span class="toggle-item-label">Call Alerts</span>
-            <div class="toggle-row">
-              <label class="pill-switch"><input type="checkbox" id="setting-twilio" onchange="toggleTwilio()" /><span class="pill-track"></span></label>
-              <span class="pill-on-label" id="label-setting-twilio">OFF</span>
-            </div>
-          </div>
-        </div>
-        <div class="settings-divider"></div>
-        <div class="settings-section">
-          <div class="toggle-item">
-            <span class="toggle-item-label">Telegram Notification</span>
-            <div class="toggle-row">
-              <label class="pill-switch"><input type="checkbox" id="setting-telegram" onchange="updateSetting('telegram_alerts', this.checked)" checked /><span class="pill-track"></span></label>
-              <span class="pill-on-label" id="label-setting-telegram">Enabled</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /dash-section:dashboard -->
-
-    <!-- ── CAMERAS SECTION ── -->
-    <div class="dash-section" data-section="cameras" style="display:none;">
-      <div class="camera-section" style="margin-top:8px;">
-        <div class="cam-panel">
-          <div class="cam-panel-header"><span class="cam-panel-title">Thermal Camera</span><div class="live-badge">LIVE</div></div>
-          <div class="cam-feed-wrap"><img class="cam-feed" src="http://localhost:8000/thermal" alt="Thermal"/></div>
-        </div>
-        <div class="cam-panel">
-          <div class="cam-panel-header"><span class="cam-panel-title">Detection Camera (AI)</span><div class="live-badge">LIVE</div></div>
-          <div class="cam-feed-wrap"><img class="cam-feed" src="http://localhost:8000/video" alt="Detection"/></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── DETECT SECTION ── -->
-    <div class="dash-section" data-section="detect" style="display:none;">
-      <div class="card" style="margin-top:8px;padding:20px;">
-        <div class="card-title">Live AI Detections</div>
-        <div id="detect-section-list" style="display:flex;flex-direction:column;gap:8px;min-height:80px;"></div>
-      </div>
-    </div>
-
-    <!-- ── ALERTS SECTION ── -->
-    <div class="dash-section" data-section="alerts" style="display:none;">
-      <div class="card event-log" style="margin-top:8px;max-height:70vh;">
-        <div class="card-title">Full Event Log</div>
-        <div id="alert-log-full" role="log" style="overflow-y:auto;max-height:60vh;display:flex;flex-direction:column;gap:5px;"></div>
-      </div>
-    </div>
-
-    <!-- ── MAP SECTION ── -->
-    <div class="dash-section" data-section="map" style="display:none;">
-      <div class="card map-card" style="margin-top:8px;">
-        <div class="card-title">Live Location Map</div>
-        <div class="map-container" style="height:65vh;">
-          <div id="location-map-fullscreen" style="width:100%;height:100%;"></div>
-        </div>
-        <div class="map-meta">
-          <div class="map-meta-item"><div class="map-meta-label">Latitude</div><div class="map-meta-val" id="map-lat2">—</div></div>
-          <div class="map-meta-item"><div class="map-meta-label">Longitude</div><div class="map-meta-val" id="map-lon2">—</div></div>
-          <div class="map-meta-item"><div class="map-meta-label">Accuracy</div><div class="map-meta-val" id="map-acc2">—</div></div>
-          <div class="map-meta-item"><div class="map-meta-label">Speed</div><div class="map-meta-val" id="map-speed2">—</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── LOGS SECTION ── -->
-    <div class="dash-section" data-section="logs" style="display:none;">
-      <div class="card" style="margin-top:8px;">
-        <div class="card-title">System Logs</div>
-        <div id="logs-section" style="overflow-y:auto;max-height:70vh;font-size:0.72rem;color:var(--text-secondary);display:flex;flex-direction:column;gap:4px;"></div>
-      </div>
-    </div>
-
-    <!-- ── ANALYTICS SECTION ── -->
-    <div class="dash-section" data-section="analytics" style="display:none;">
-      <div class="card" style="margin-top:8px;padding:20px;">
-        <div class="card-title">Analytics</div>
-        <div class="chart-container"><canvas id="analytics-chart"></canvas></div>
-      </div>
-    </div>
-
-    <!-- ── SETTINGS SECTION ── -->
-    <div class="dash-section" data-section="settings" style="display:none;">
-      <div class="card" style="margin-top:8px;padding:24px;">
-        <div class="card-title">Settings</div>
-
-        <!-- Alert Settings -->
-        <div style="margin-top:18px;">
-          <div class="settings-page-group-label">Alert Settings</div>
-          <div class="settings-page-section">
-
-            <div class="settings-page-item">
-              <div class="settings-page-label">
-                <span class="settings-page-label-title">Fire Alert (High Risk)</span>
-                <span class="settings-page-label-sub">Send alert when fire is detected</span>
-              </div>
-              <div class="settings-page-toggle">
-                <label class="pill-switch"><input type="checkbox" id="setting-fire-page" onchange="updateSetting('fire_alerts', this.checked)" checked /><span class="pill-track"></span></label>
-                <span class="pill-on-label" id="label-setting-fire-page">Enabled</span>
+              <div class="cam-feed-wrap" id="thermal-feed-wrap">
+                <img id="thermal-img" class="cam-feed" src="/thermal" alt="Thermal feed" style="display:none;" />
+                <!-- Offline placeholder -->
+                <div id="thermal-offline-placeholder"
+                  style="display:flex;width:100%;height:100%;background:#0a0a0a;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5">
+                    <path d="M23 7l-7 5 7 5V7z" />
+                    <rect x="1" y="5" width="15" height="14" rx="2" />
+                    <line x1="1" y1="1" x2="23" y2="23" stroke="#555" />
+                  </svg>
+                  <span style="color:#555;font-size:0.75rem;letter-spacing:0.08em;">CAMERA OFFLINE</span>
+                </div>
+                <div class="cam-overlay-bottom">
+                  <div class="temp-bar-wrap">
+                    <span>15°C</span>
+                    <div class="temp-bar"></div>
+                    <span>60°C</span>
+                  </div>
+                  <span class="cam-max-temp" id="thermal-max-temp">Max: 38°C</span>
+                </div>
               </div>
             </div>
 
-            <div class="settings-page-item">
-              <div class="settings-page-label">
-                <span class="settings-page-label-title">Smoke Alert (Medium Risk)</span>
-                <span class="settings-page-label-sub">Send alert when smoke is detected</span>
+            <!-- Detection -->
+            <div class="cam-panel">
+              <div class="cam-panel-header">
+                <span class="cam-panel-title">Detection Camera (Fire/Smoke)</span>
+                <button class="cam-expand-btn" title="Expand">⤢</button>
               </div>
-              <div class="settings-page-toggle">
-                <label class="pill-switch"><input type="checkbox" id="setting-smoke-page" onchange="updateSetting('smoke_alerts', this.checked)" checked /><span class="pill-track"></span></label>
-                <span class="pill-on-label" id="label-setting-smoke-page">Enabled</span>
+              <div class="cam-feed-wrap" id="det-feed-wrap">
+                <img id="detection-img" class="cam-feed" src="/video" alt="Detection feed" style="display:none;" />
+                <!-- Offline placeholder -->
+                <div id="cam-offline-placeholder"
+                  style="display:flex;width:100%;height:100%;background:#0a0a0a;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5">
+                    <path d="M23 7l-7 5 7 5V7z" />
+                    <rect x="1" y="5" width="15" height="14" rx="2" />
+                    <line x1="1" y1="1" x2="23" y2="23" stroke="#555" />
+                  </svg>
+                  <span style="color:#555;font-size:0.75rem;letter-spacing:0.08em;">CAMERA OFFLINE</span>
+                </div>
+                <div class="cam-overlay-bottom">
+                  <div id="detection-list" style="display:flex;flex-direction:row;gap:5px;align-items:center;"></div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /camera-section -->
+
+          <!-- METRICS ROW -->
+          <div class="metrics-row">
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
+                </svg>
+                Temperature
+              </div>
+              <div class="metric-value" id="metric-temp">—</div>
+              <div class="metric-status">Normal</div>
+              <svg class="metric-wave" viewBox="0 0 80 24" fill="none">
+                <polyline class="wave-line" stroke="#00e676" stroke-width="1.5" stroke-dasharray="80"
+                  points="0,12 10,8 20,16 30,6 40,14 50,10 60,18 70,8 80,12" />
+              </svg>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+                </svg>
+                Humidity
+              </div>
+              <div class="metric-value" id="metric-humidity">—</div>
+              <div class="metric-status">Normal</div>
+              <svg class="metric-wave" viewBox="0 0 80 24" fill="none">
+                <polyline class="wave-line" stroke="#00b4d8" stroke-width="1.5" stroke-dasharray="80"
+                  points="0,14 10,10 20,16 30,8 40,12 50,6 60,14 70,10 80,14" />
+              </svg>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C9.5 6 5 9 5 14a7 7 0 0 0 14 0c0-5-4.5-8-7-12z" fill="#ff6b00" opacity="0.8" />
+                </svg>
+                Flame Sensor
+              </div>
+              <div class="metric-value" id="metric-flame" style="font-size:1rem;margin-top:4px;">No Flame</div>
+              <div class="metric-status" id="metric-flame-status">Normal</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z" />
+                </svg>
+                Smoke Detected
+              </div>
+              <div class="metric-value" id="metric-smoke" style="font-size:1rem;margin-top:4px;">No Smoke</div>
+              <div class="metric-status" id="metric-smoke-status">Normal</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                System Uptime
+              </div>
+              <div class="metric-value" id="metric-uptime">0m</div>
+              <div class="metric-status" style="color:var(--green)">Running</div>
+            </div>
+
+          </div><!-- /metrics-row -->
+
+          <!-- ANALYSIS ROW -->
+          <div class="analysis-row">
+
+            <div class="card chart-card">
+              <div class="card-title">Risk Score Timeline — Last 60 Seconds</div>
+              <select class="chart-dropdown">
+                <option>60 Seconds</option>
+              </select>
+              <div class="chart-container">
+                <canvas id="risk-chart" role="img" aria-label="Risk score chart"></canvas>
+              </div>
+            </div>
+
+            <div class="card event-log">
+              <div class="card-title">Event Log</div>
+              <div id="alert-log" role="log" aria-live="polite"></div>
+              <a href="#" class="view-all-link">✦ View All Logs</a>
+            </div>
+
+          </div><!-- /analysis-row -->
+
+          <!-- MAP + SUMMARY ROW -->
+          <div class="map-summary-row">
+
+            <div class="card map-card">
+              <div class="card-title">Live Location Map</div>
+              <div class="map-container">
+                <div id="location-map"></div>
+              </div>
+              <div class="map-meta">
+                <div class="map-meta-item">
+                  <div class="map-meta-label">Latitude</div>
+                  <div class="map-meta-val" id="map-lat">—</div>
+                </div>
+                <div class="map-meta-item">
+                  <div class="map-meta-label">Longitude</div>
+                  <div class="map-meta-val" id="map-lon">—</div>
+                </div>
+                <div class="map-meta-item">
+                  <div class="map-meta-label">Accuracy</div>
+                  <div class="map-meta-val" id="map-acc">—</div>
+                </div>
+                <div class="map-meta-item">
+                  <div class="map-meta-label">Speed</div>
+                  <div class="map-meta-val" id="map-speed">—</div>
+                </div>
+              </div>
+              <div class="map-controls">
+                <div class="tracking-toggle">
+                  <label class="pill-switch">
+                    <input type="checkbox" id="tracking-toggle" checked />
+                    <span class="pill-track"></span>
+                  </label>
+                  <span>Location Tracking</span>
+                </div>
+                <a id="btn-maps" href="#" target="_blank" rel="noopener" class="disabled">
+                  View in Maps
+                </a>
+              </div>
+            </div>
+
+            <div class="card summary-card">
+              <div class="card-title">Alert Summary</div>
+              <div class="donut-wrap">
+                <div class="donut-container">
+                  <canvas id="alert-donut"></canvas>
+                  <div class="donut-center">
+                    <div class="donut-total" id="donut-total">0</div>
+                    <div class="donut-total-label">Total Alerts</div>
+                  </div>
+                </div>
+                <div class="donut-legend">
+                  <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span> High Risk
+                    <span id="legend-high" style="margin-left:auto;font-weight:700;color:var(--text-primary)">0</span>
+                  </div>
+                  <div class="legend-item"><span class="legend-dot" style="background:var(--yellow)"></span> Medium Risk
+                    <span id="legend-med" style="margin-left:auto;font-weight:700;color:var(--text-primary)">0</span>
+                  </div>
+                  <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span> Low Risk
+                    <span id="legend-low" style="margin-left:auto;font-weight:700;color:var(--text-primary)">0</span>
+                  </div>
+                  <div class="legend-item" style="margin-top:4px;border-top:1px solid var(--border);padding-top:6px;">
+                    <span style="color:var(--text-muted)">Total</span> <span id="legend-total"
+                      style="margin-left:auto;font-weight:700;color:var(--text-primary)">0</span>
+                  </div>
+                </div>
+              </div>
+              <button class="btn-export" onclick="exportReport()">⬇ Export Report</button>
+            </div>
+
+          </div><!-- /map-summary-row -->
+
+          <!-- ALERT SETTINGS -->
+          <div class="alert-settings-bar">
+            <!-- DEMO MODE -->
+            <div class="settings-section"
+              style="background:var(--bg-card-2); border-left: 3px solid var(--accent); padding: 12px; margin-bottom: 15px; border-radius: 6px;">
+              <div class="toggle-item" style="margin-bottom:0;">
+                <div style="display:flex; flex-direction:column; gap:4px;">
+                  <span class="toggle-item-label" style="font-weight:700; color:var(--accent);">Demo Mode</span>
+                  <span style="font-size:0.65rem; color:var(--text-muted);">Disables real Telegram and Twilio
+                    alerts</span>
+                </div>
+                <div class="toggle-row">
+                  <label class="pill-switch"><input type="checkbox" id="setting-demo-mode"
+                      onchange="updateSetting('demo_mode', this.checked)" /><span class="pill-track"></span></label>
+                  <span class="pill-on-label" id="label-setting-demo-mode" style="color:var(--text-muted);">OFF</span>
+                </div>
+              </div>
+            </div>
+
+            <span class="settings-group-label">Alert Settings</span>
+            <div class="settings-section" id="alert-settings-container">
+              <div class="toggle-item">
+                <span class="toggle-item-label">Fire Alert (High Risk)</span>
+                <div class="toggle-row">
+                  <label class="pill-switch"><input type="checkbox" id="setting-fire"
+                      onchange="updateSetting('fire_alerts', this.checked)" checked /><span
+                      class="pill-track"></span></label>
+                  <span class="pill-on-label" id="label-setting-fire">Enabled</span>
+                </div>
+              </div>
+              <div class="toggle-item">
+                <span class="toggle-item-label">Smoke Alert (Medium Risk)</span>
+                <div class="toggle-row">
+                  <label class="pill-switch"><input type="checkbox" id="setting-smoke"
+                      onchange="updateSetting('smoke_alerts', this.checked)" checked /><span
+                      class="pill-track"></span></label>
+                  <span class="pill-on-label" id="label-setting-smoke">Enabled</span>
+                </div>
+              </div>
+            </div>
+            <div class="settings-divider"></div>
+            <span class="settings-group-label">Twilio Alerts</span>
+            <div class="settings-section">
+              <div class="toggle-item">
+                <span class="toggle-item-label">Call Alerts</span>
+                <div class="toggle-row">
+                  <label class="pill-switch"><input type="checkbox" id="setting-twilio"
+                      onchange="toggleTwilio()" /><span class="pill-track"></span></label>
+                  <span class="pill-on-label" id="label-setting-twilio">OFF</span>
+                </div>
+              </div>
+            </div>
+            <div class="settings-divider"></div>
+            <div class="settings-section">
+              <div class="toggle-item">
+                <span class="toggle-item-label">Telegram Notification</span>
+                <div class="toggle-row">
+                  <label class="pill-switch"><input type="checkbox" id="setting-telegram"
+                      onchange="updateSetting('telegram_alerts', this.checked)" checked /><span
+                      class="pill-track"></span></label>
+                  <span class="pill-on-label" id="label-setting-telegram">Enabled</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /dash-section:dashboard -->
+
+        <!-- ── CAMERAS SECTION ── -->
+        <div class="dash-section" data-section="cameras" style="display:none;">
+
+          <!-- Live Feeds -->
+          <div class="camera-section" style="margin-top:8px;">
+            <div class="cam-panel">
+              <div class="cam-panel-header"><span class="cam-panel-title">Thermal Camera</span>
+                <div class="live-badge" id="thermal-live-badge-2">LIVE</div>
+              </div>
+              <div class="cam-feed-wrap">
+                <img id="thermal-img-2" class="cam-feed" src="/thermal" alt="Thermal feed" />
+                <!-- Offline placeholder -->
+                <div id="thermal-offline-placeholder-2"
+                  style="display:none;width:100%;height:100%;background:#0a0a0a;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5">
+                    <path d="M23 7l-7 5 7 5V7z" />
+                    <rect x="1" y="5" width="15" height="14" rx="2" />
+                    <line x1="1" y1="1" x2="23" y2="23" stroke="#555" />
+                  </svg>
+                  <span style="color:#555;font-size:0.75rem;letter-spacing:0.08em;">CAMERA OFFLINE</span>
+                </div>
+              </div>
+            </div>
+            <div class="cam-panel">
+              <div class="cam-panel-header"><span class="cam-panel-title">Detection Camera (AI)</span>
+                <div class="live-badge" id="det-live-badge-2">LIVE</div>
+              </div>
+              <div class="cam-feed-wrap">
+                <img id="detection-img-2" class="cam-feed" src="/video" alt="Detection feed" />
+                <!-- Offline placeholder -->
+                <div id="cam-offline-placeholder-2"
+                  style="display:none;width:100%;height:100%;background:#0a0a0a;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5">
+                    <path d="M23 7l-7 5 7 5V7z" />
+                    <rect x="1" y="5" width="15" height="14" rx="2" />
+                    <line x1="1" y1="1" x2="23" y2="23" stroke="#555" />
+                  </svg>
+                  <span style="color:#555;font-size:0.75rem;letter-spacing:0.08em;">CAMERA OFFLINE</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RTSP Configuration Panel -->
+          <div class="card" style="margin-top:16px;padding:24px;">
+            <div class="card-title" style="margin-bottom:18px;">RTSP Camera Configuration</div>
+
+            <!-- Row 1: IP + Port -->
+            <div class="rtsp-form-row">
+              <div class="rtsp-form-group">
+                <label class="rtsp-label">Camera IP Address</label>
+                <input class="rtsp-field" id="rtsp-ip" type="text" placeholder="192.168.1.64" />
+              </div>
+              <div class="rtsp-form-group" style="max-width:120px;">
+                <label class="rtsp-label">Port</label>
+                <input class="rtsp-field" id="rtsp-port" type="number" value="554" min="1" max="65535" />
+              </div>
+            </div>
+
+            <!-- Row 2: Username + Password -->
+            <div class="rtsp-form-row" style="margin-top:12px;">
+              <div class="rtsp-form-group">
+                <label class="rtsp-label">Username</label>
+                <input class="rtsp-field" id="rtsp-username" type="text" placeholder="admin" autocomplete="username" />
+              </div>
+              <div class="rtsp-form-group">
+                <label class="rtsp-label">Password</label>
+                <input class="rtsp-field" id="rtsp-password" type="password" placeholder="••••••••"
+                  autocomplete="current-password" />
+              </div>
+            </div>
+
+            <!-- Row 3: Channel + Quality -->
+            <div class="rtsp-form-row" style="margin-top:12px;">
+              <div class="rtsp-form-group">
+                <label class="rtsp-label">Channel</label>
+                <input class="rtsp-field" id="rtsp-channel" type="number" placeholder="1" min="1" />
+              </div>
+              <div class="rtsp-form-group">
+                <label class="rtsp-label">Stream Quality</label>
+                <select class="rtsp-field rtsp-select" id="rtsp-subtype">
+                  <option value="0">High Quality (subtype=0)</option>
+                  <option value="1">Low Quality (subtype=1)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Live URL Preview -->
+            <div style="margin-top:16px;">
+              <label class="rtsp-label">Generated RTSP URL</label>
+              <div class="rtsp-url-preview" id="rtsp-url-preview">Fill in the fields above to generate a URL</div>
+            </div>
+
+            <!-- RTSP Format Reference -->
+            <details class="rtsp-format-details" style="margin-top:12px;">
+              <summary class="rtsp-format-summary">
+                <span style="display:flex;align-items:center;gap:6px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  </svg>
+                  Click to view supported URL formats &amp; examples
+                </span>
+              </summary>
+              <div
+                style="margin-top:8px;font-size:0.7rem;color:var(--text-muted);line-height:1.8;background:var(--bg-card-2);border-radius:6px;padding:10px 14px;">
+                <strong style="color:var(--text-secondary);">Dahua / Generic ONVIF (auto-generated
+                  above):</strong><br />
+                <code>rtsp://admin:pass@192.168.1.64:554/cam/realmonitor?channel=1&subtype=0</code><br /><br />
+                <strong style="color:var(--text-secondary);">Hikvision:</strong><br />
+                <code>rtsp://admin:pass@192.168.1.64:554/Streaming/Channels/101</code> (Ch1 Main)<br />
+                <code>rtsp://admin:pass@192.168.1.64:554/Streaming/Channels/102</code> (Ch1 Sub)<br /><br />
+                <strong style="color:var(--text-secondary);">MediaMTX (local PC webcam via FFmpeg):</strong><br />
+                <code>rtsp://host.docker.internal:8554/webcam</code><br /><br />
+                <strong style="color:var(--text-secondary);">Generic / No Auth:</strong><br />
+                <code>rtsp://192.168.1.64:554/stream</code>
+              </div>
+            </details>
+
+            <!-- Network Warning -->
+            <div style="margin-top:16px;padding:12px;background:rgba(255,165,0,0.1);border-left:4px solid var(--accent);border-radius:4px;font-size:0.8rem;color:var(--text-secondary);">
+              <strong style="color:var(--accent);">Note on Cloud Deployment:</strong> To successfully stream via RTSP, the CCTV camera and the server must be on the same local network, or the camera must have a public static IP. Since this demo is deployed on the cloud, it cannot access your local home network's CCTV cameras. <strong>Please test RTSP streaming locally</strong> on your own machine.
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="rtsp-form-actions">
+              <button class="btn-test" id="btn-rtsp-test" onclick="testRtspConnection()">Test Connection</button>
+              <button class="btn-save" id="btn-rtsp-connect" onclick="connectRtspFromPanel()">Save &amp;
+                Connect</button>
+              <button class="btn-stop" id="btn-rtsp-stop-panel" onclick="stopStream()">Stop Stream</button>
+              <div class="conn-status" id="rtsp-panel-status" style="margin-left:auto;">
+                <span>●</span> <span id="rtsp-panel-label">Idle</span>
               </div>
             </div>
 
           </div>
         </div>
 
-        <div class="settings-page-divider" style="margin:18px 0;"></div>
+        <!-- ── DETECT SECTION ── -->
+        <div class="dash-section" data-section="detect" style="display:none;">
+          <div class="card" style="margin-top:8px;padding:20px;">
+            <div class="card-title">Live AI Detections</div>
+            <div id="detect-section-list" style="display:flex;flex-direction:column;gap:8px;min-height:80px;"></div>
+          </div>
+        </div>
 
-        <!-- Telegram -->
-        <div>
-          <div class="settings-page-group-label">Telegram Notifications</div>
-          <div class="settings-page-section">
+        <!-- ── ALERTS SECTION ── -->
+        <div class="dash-section" data-section="alerts" style="display:none;">
+          <div class="card event-log" style="margin-top:8px;max-height:70vh;">
+            <div class="card-title">Full Event Log</div>
+            <div id="alert-log-full" role="log"
+              style="overflow-y:auto;max-height:60vh;display:flex;flex-direction:column;gap:5px;"></div>
+          </div>
+        </div>
 
-            <div class="settings-page-item">
-              <div class="settings-page-label">
-                <span class="settings-page-label-title">Telegram Alerts</span>
-                <span class="settings-page-label-sub">Send Telegram messages on detection events</span>
+        <!-- ── MAP SECTION ── -->
+        <div class="dash-section" data-section="map" style="display:none;">
+          <div class="card map-card" style="margin-top:8px;">
+            <div class="card-title">Live Location Map</div>
+            <div class="map-container" style="height:65vh;">
+              <div id="location-map-fullscreen" style="width:100%;height:100%;"></div>
+            </div>
+            <div class="map-meta">
+              <div class="map-meta-item">
+                <div class="map-meta-label">Latitude</div>
+                <div class="map-meta-val" id="map-lat2">—</div>
               </div>
-              <div class="settings-page-toggle">
-                <label class="pill-switch"><input type="checkbox" id="setting-telegram-page" onchange="updateSetting('telegram_alerts', this.checked)" checked /><span class="pill-track"></span></label>
-                <span class="pill-on-label" id="label-setting-telegram-page">Enabled</span>
+              <div class="map-meta-item">
+                <div class="map-meta-label">Longitude</div>
+                <div class="map-meta-val" id="map-lon2">—</div>
+              </div>
+              <div class="map-meta-item">
+                <div class="map-meta-label">Accuracy</div>
+                <div class="map-meta-val" id="map-acc2">—</div>
+              </div>
+              <div class="map-meta-item">
+                <div class="map-meta-label">Speed</div>
+                <div class="map-meta-val" id="map-speed2">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── LOGS SECTION ── -->
+        <div class="dash-section" data-section="logs" style="display:none;">
+          <div class="card" style="margin-top:8px;">
+            <div class="card-title">System Logs</div>
+            <div id="logs-section"
+              style="overflow-y:auto;max-height:70vh;font-size:0.72rem;color:var(--text-secondary);display:flex;flex-direction:column;gap:4px;">
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ANALYTICS SECTION ── -->
+        <div class="dash-section" data-section="analytics" style="display:none;">
+          <div class="card" style="margin-top:8px;padding:20px;">
+            <div class="card-title">Analytics</div>
+            <div class="chart-container"><canvas id="analytics-chart"></canvas></div>
+          </div>
+        </div>
+
+        <!-- ── SETTINGS SECTION ── -->
+        <div class="dash-section" data-section="settings" style="display:none;">
+          <div class="card" style="margin-top:8px;padding:24px;">
+            <div class="card-title">Settings</div>
+
+            <!-- Demo Mode Setting -->
+            <div style="margin-top:18px;">
+              <div class="settings-page-group-label" style="color:var(--accent);">Demo Mode</div>
+              <div class="settings-page-section" style="border-left: 3px solid var(--accent);">
+                <div class="settings-page-item">
+                  <div class="settings-page-label">
+                    <span class="settings-page-label-title" style="color:var(--accent);">Demo Mode</span>
+                    <span class="settings-page-label-sub">Disables real Telegram and Twilio alerts for public demonstrations.<br>
+                    <strong style="color:var(--text-primary);">Note:</strong> This deployed cloud version cannot be configured for real Telegram and Twilio alerts. To test real-time alerts, please run the project locally and setup the <code>.env</code> file.</span>
+                  </div>
+                  <div class="settings-page-toggle">
+                    <label class="pill-switch"><input type="checkbox" id="setting-demo-mode-page"
+                        onchange="updateSetting('demo_mode', this.checked)" /><span
+                        class="pill-track"></span></label>
+                    <span class="pill-on-label" id="label-setting-demo-mode-page" style="color:var(--text-muted);">OFF</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-page-divider" style="margin:18px 0;"></div>
+
+            <!-- Alert Settings -->
+            <div>
+              <div class="settings-page-group-label">Alert Settings</div>
+              <div class="settings-page-section">
+
+                <div class="settings-page-item">
+                  <div class="settings-page-label">
+                    <span class="settings-page-label-title">Fire Alert (High Risk)</span>
+                    <span class="settings-page-label-sub">Send alert when fire is detected</span>
+                  </div>
+                  <div class="settings-page-toggle">
+                    <label class="pill-switch"><input type="checkbox" id="setting-fire-page"
+                        onchange="updateSetting('fire_alerts', this.checked)" checked /><span
+                        class="pill-track"></span></label>
+                    <span class="pill-on-label" id="label-setting-fire-page">Enabled</span>
+                  </div>
+                </div>
+
+                <div class="settings-page-item">
+                  <div class="settings-page-label">
+                    <span class="settings-page-label-title">Smoke Alert (Medium Risk)</span>
+                    <span class="settings-page-label-sub">Send alert when smoke is detected</span>
+                  </div>
+                  <div class="settings-page-toggle">
+                    <label class="pill-switch"><input type="checkbox" id="setting-smoke-page"
+                        onchange="updateSetting('smoke_alerts', this.checked)" checked /><span
+                        class="pill-track"></span></label>
+                    <span class="pill-on-label" id="label-setting-smoke-page">Enabled</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="settings-page-divider" style="margin:18px 0;"></div>
+
+            <!-- Telegram -->
+            <div>
+              <div class="settings-page-group-label">Telegram Notifications</div>
+              <div class="settings-page-section">
+
+                <div class="settings-page-item">
+                  <div class="settings-page-label">
+                    <span class="settings-page-label-title">Telegram Alerts</span>
+                    <span class="settings-page-label-sub">Send Telegram messages on detection events</span>
+                  </div>
+                  <div class="settings-page-toggle">
+                    <label class="pill-switch"><input type="checkbox" id="setting-telegram-page"
+                        onchange="updateSetting('telegram_alerts', this.checked)" checked /><span
+                        class="pill-track"></span></label>
+                    <span class="pill-on-label" id="label-setting-telegram-page">Enabled</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="settings-page-divider" style="margin:18px 0;"></div>
+
+            <!-- Twilio -->
+            <div>
+              <div class="settings-page-group-label">Twilio Call Alerts</div>
+              <div class="settings-page-section">
+
+                <div class="settings-page-item">
+                  <div class="settings-page-label">
+                    <span class="settings-page-label-title">Call Alerts</span>
+                    <span class="settings-page-label-sub">Calls your phone when fire is detected. Disabled by default to
+                      save credits.</span>
+                  </div>
+                  <div class="settings-page-toggle">
+                    <label class="pill-switch"><input type="checkbox" id="setting-twilio-page"
+                        onchange="toggleTwilio()" /><span class="pill-track"></span></label>
+                    <span class="pill-on-label" id="label-setting-twilio-page">OFF</span>
+                  </div>
+                </div>
+
               </div>
             </div>
 
           </div>
         </div>
 
-        <div class="settings-page-divider" style="margin:18px 0;"></div>
-
-        <!-- Twilio -->
-        <div>
-          <div class="settings-page-group-label">Twilio Call Alerts</div>
-          <div class="settings-page-section">
-
-            <div class="settings-page-item">
-              <div class="settings-page-label">
-                <span class="settings-page-label-title">Call Alerts</span>
-                <span class="settings-page-label-sub">Calls your phone when fire is detected. Disabled by default to save credits.</span>
-              </div>
-              <div class="settings-page-toggle">
-                <label class="pill-switch"><input type="checkbox" id="setting-twilio-page" onchange="toggleTwilio()" /><span class="pill-track"></span></label>
-                <span class="pill-on-label" id="label-setting-twilio-page">OFF</span>
-              </div>
+        <!-- ── ABOUT SECTION ── -->
+        <div class="dash-section" data-section="about" style="display:none;">
+          <div class="card" style="margin-top:8px;padding:24px;">
+            <div class="card-title">About</div>
+            <h2 style="color:var(--accent);font-size:1.4rem;margin-bottom:8px;">SmartFirePredict</h2>
+            <p style="color:var(--text-secondary);font-size:0.82rem;line-height:1.7;">Real-time AI + IoT fire and smoke
+              detection system. Built with FastAPI, YOLOv8, OpenCV, Leaflet, and ESP32 hardware integration.</p>
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid #333;">
+              <p style="color:var(--text-primary);font-size:0.9rem;font-weight:500;">Built by Laeeq Ahmed</p>
+              <p style="color:var(--text-secondary);font-size:0.82rem;margin-top:4px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:text-bottom;margin-right:4px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                <a href="mailto:laeeq.amd@gmail.com" style="color:var(--accent);text-decoration:none;">laeeq.amd@gmail.com</a>
+              </p>
+              <p style="color:var(--text-secondary);font-size:0.82rem;margin-top:4px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:text-bottom;margin-right:4px;"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                <a href="https://github.com/laeeq-ahmd/" target="_blank" style="color:var(--accent);text-decoration:none;">github.com/laeeq-ahmd</a>
+              </p>
             </div>
-
+            <p style="margin-top:12px;color:var(--text-muted);font-size:0.72rem;">Version 1.0.0</p>
           </div>
         </div>
 
-      </div>
-    </div>
+      </main><!-- /dashboard -->
 
-    <!-- ── ABOUT SECTION ── -->
-    <div class="dash-section" data-section="about" style="display:none;">
-      <div class="card" style="margin-top:8px;padding:24px;">
-        <div class="card-title">About</div>
-        <h2 style="color:var(--accent);font-size:1.4rem;margin-bottom:8px;">SmartFirePredict</h2>
-        <p style="color:var(--text-secondary);font-size:0.82rem;line-height:1.7;">Real-time AI + IoT fire and smoke detection system. Built with FastAPI, YOLOv8, OpenCV, Leaflet, and ESP32 hardware integration.</p>
-        <p style="margin-top:12px;color:var(--text-muted);font-size:0.72rem;">Version 1.0.0</p>
-      </div>
-    </div>
+      <!-- FOOTER -->
+      <footer class="dashboard-footer">
+        <span>SmartFirePredict v1.0.0</span>
+        <div class="footer-status">
+          <span
+            style="width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);display:inline-block;"></span>
+          All systems operational
+        </div>
+      </footer>
 
-    </main><!-- /dashboard -->
+    </div><!-- /main-content -->
+  </div><!-- /app-layout -->
 
-    <!-- FOOTER -->
-    <footer class="dashboard-footer">
-      <span>SmartFirePredict v1.0.0</span>
-      <div class="footer-status">
-        <span style="width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);display:inline-block;"></span>
-        All systems operational
-      </div>
-    </footer>
-
-  </div><!-- /main-content -->
-</div><!-- /app-layout -->
-
-<script src="/static/js/gauge.js?v=3"></script>
-<script src="/static/js/chart.js?v=3"></script>
-<script src="/static/js/location.js?v=3"></script>
-<script src="/static/js/alerts.js?v=3"></script>
-<script src="/static/js/main.js?v=3"></script>
+  <script src="/static/js/gauge.js?v=3"></script>
+  <script src="/static/js/chart.js?v=3"></script>
+  <script src="/static/js/location.js?v=3"></script>
+  <script src="/static/js/alerts.js?v=3"></script>
+  <script src="/static/js/rtsp.js?v=1"></script>
+  <script src="/static/js/main.js?v=3"></script>
 </body>
+
 </html>

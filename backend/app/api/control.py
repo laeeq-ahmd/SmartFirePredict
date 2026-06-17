@@ -100,6 +100,7 @@ class AlertSettingsUpdate(BaseModel):
     fire_alerts: Optional[bool] = None
     smoke_alerts: Optional[bool] = None
     telegram_alerts: Optional[bool] = None
+    demo_mode: Optional[bool] = None
 
 @router.get("/settings")
 async def get_settings():
@@ -112,6 +113,7 @@ async def update_settings(req: AlertSettingsUpdate):
     alert_settings.update(
         fire=req.fire_alerts,
         smoke=req.smoke_alerts,
-        telegram=req.telegram_alerts
+        telegram=req.telegram_alerts,
+        demo_mode=req.demo_mode
     )
     return {"status": "success", "settings": alert_settings.get_all()}

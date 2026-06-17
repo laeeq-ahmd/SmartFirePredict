@@ -34,6 +34,18 @@ class VideoStream:
         self.thread.start()
         return True
 
+    def start_websocket_mode(self):
+        self.stop()
+        self.stream_url = "websocket"
+        self.running = True
+        print("[STREAM] Started in WebSocket mode.")
+        return True
+
+    def put_frame(self, frame: np.ndarray):
+        if self.running and self.stream_url == "websocket":
+            with self.lock:
+                self.latest_frame = frame
+
     def _update(self):
         print("[STREAM] Thread started. Waiting for frames...")
         frames_grabbed = 0

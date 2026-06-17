@@ -1,0 +1,133 @@
+# =============================================================================
+# SmartFirePredict — Backend-Only Dockerfile
+# =============================================================================
+# Builds the FastAPI backend with YOLO inference, ESP32 serial monitoring,
+# Telegram/Twilio alerting, and serves the frontend as static files.
+#
+# Base: python:3.11-slim  (Debian 12 / Bookworm)
+#   - Slim variant: removes docs, locales, and extra packages (~150 MB saved
+#     vs full image) while keeping pip + apt for extra system deps.
+#   - 3.11 chosen: ultralytics 8.0.222 + OpenCV 4.8.1 are tested on 3.11.
+#     3.12 is NOT yet fully tested by ultralytics 8.0.x.
+#
+# Multi-stage is NOT used here because ultralytics/YOLO requires OpenCV's
+# shared libs at runtime (libGL, libglib, etc.) — no clean way to slim
+# further without recompiling OpenCV from source.
+# =============================================================================
+
+# ── Stage: runtime ────────────────────────────────────────────────────────────
+FROM python:3.11-slim
+
+# ── Build-time metadata ───────────────────────────────────────────────────────
+LABEL maintainer="SmartFirePredict"
+LABEL description="FastAPI + YOLO fire detection backend"
+LABEL version="1.0"
+
+# ── System dependencies ───────────────────────────────────────────────────────
+# libgl1          → OpenCV needs libGL.so.1 (GUI / codec backend)
+# libglib2.0-0    → OpenCV threading primitives
+# libgomp1        → OpenMP (used by YOLO during model inference)
+# libusb-1.0-0    → pyserial USB-serial device access for ESP32
+# udev            → /dev/tty* device enumeration inside the container
+# curl            → useful for health-check or debugging inside container
+# ca-certificates → HTTPS calls to Telegram / Twilio APIs
+#
+# All installed in a single RUN layer → fewer image layers → smaller image.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 \
+    libglib2.0-0 \
+    libgomp1 \
+    libusb-1.0-0 \
+    udev \
+    curl \
+    ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── Working directory ─────────────────────────────────────────────────────────
+# All subsequent commands run relative to /app inside the container.
+WORKDIR /app
+
+# ── Python dependencies (cached layer) ───────────────────────────────────────
+# Copy requirements FIRST (before application code) so that Docker can cache
+# the pip install layer. If only source code changes, this layer is not rebuilt.
+COPY backend/requirements.txt ./requirements.txt
+
+# Install Python deps:
+#   --no-cache-dir    → do not store pip download cache (saves ~50 MB)
+#   --upgrade pip     → avoid "pip is outdated" warnings
+#   python-dotenv     → needed by run.py to load .env
+#   requests          → Telegram HTTP calls
+#   pyserial          → ESP32 serial communication
+#   twilio            → Twilio REST API (optional but included for completeness)
+RUN pip install --upgrade pip --no-cache-dir \
+    && pip install torch==2.2.2 torchvision==0.17.2 --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir \
+    python-dotenv \
+    requests \
+    pyserial \
+    twilio
+
+# ── Application source code ───────────────────────────────────────────────────
+# Copy backend source (app/ package + run.py)
+COPY backend/ ./backend/
+
+# Copy frontend (FastAPI serves it as StaticFiles at /static and / index)
+# main.py resolves frontend path as: ../../frontend/dashboard (relative to app/)
+# Inside Docker:  /app/backend/app/main.py  → ../../  = /app/
+# So we need frontend at: /app/frontend/dashboard
+COPY frontend/ ./frontend/
+
+# ── YOLO Model ────────────────────────────────────────────────────────────────
+# config.py resolves model path as: backend/models/best.pt
+# Copy the trained model weights into the container.
+# NOTE: best.pt is ~22 MB. If you use a volume mount at runtime you can skip
+#       this COPY and bind-mount the models/ directory instead (see Run command).
+COPY backend/models/best.pt ./backend/models/best.pt
+
+# ── Alert settings persistence ────────────────────────────────────────────────
+# alert_settings.json is written at the CWD of the process.
+# settings.py looks for it at a relative path "alert_settings.json" which
+# resolves to /app/alert_settings.json when the server starts from /app.
+# Pre-seed with defaults so the file always exists.
+
+# ── Runtime environment defaults ──────────────────────────────────────────────
+# These are SAFE DEFAULTS only. Override via --env-file or -e at docker run.
+# NEVER bake real secrets into the image.
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV OPENCV_FFMPEG_CAPTURE_OPTIONS="rtsp_transport;tcp"
+
+# ── Expose port ───────────────────────────────────────────────────────────────
+# FastAPI/uvicorn listens on 8000 (declared in run.py and used in main.py).
+# EXPOSE is documentation only — you still need -p 8000:8000 at docker run.
+EXPOSE 8000
+
+# ── Health check ─────────────────────────────────────────────────────────────
+# Docker will call GET /status every 30s. If it fails 3 times the container
+# is marked unhealthy. Useful for AWS ECS / Kubernetes liveness probes.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD curl -f http://localhost:8000/status || exit 1
+
+# ── Entrypoint ────────────────────────────────────────────────────────────────
+# Run uvicorn directly (not via run.py) so:
+#   1. We get proper PID 1 signal handling (SIGTERM → graceful shutdown).
+#   2. We avoid the sys.path.insert() hack in run.py (PYTHONPATH handles it).
+#   3. Easier to override in Kubernetes (just set command: [...]).
+#
+# --host 0.0.0.0   → listen on all interfaces (required in containers)
+# --port 8000      → matches EXPOSE above
+# --workers 1      → YOLO inference is CPU/GPU bound; multiple workers would
+#                    each load the 22 MB model independently — wasteful.
+#                    Use 1 worker + async I/O for the HTTP layer.
+# --no-access-log  → reduces log noise; set to --access-log in staging/dev.
+#
+# Set PYTHONPATH so "from app.xxx import ..." resolves from /app/backend/
+ENV PYTHONPATH=/app/backend
+
+CMD ["uvicorn", "app.main:app", \
+    "--host", "0.0.0.0", \
+    "--port", "8000", \
+    "--workers", "1", \
+    "--no-access-log"]

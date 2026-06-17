@@ -1,0 +1,1 @@
+{"fire_alerts": true, "smoke_alerts": true, "telegram_alerts": true, "twilio_alerts": false, "demo_mode": true}

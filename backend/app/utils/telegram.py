@@ -119,6 +119,10 @@ class TelegramNotifier:
             }
 
     def _send(self, text: str):
+        if self.alert_settings.get_all().get("demo_mode", False):
+            print("[DEMO MODE] Telegram alert skipped")
+            return
+
         try:
             url = f"https://api.telegram.org/bot{self._bot_token}/sendMessage"
             requests.post(url, json={

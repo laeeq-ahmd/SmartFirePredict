@@ -3,8 +3,46 @@
  * Polls /status @ 1s, drives all dashboard components.
  */
 
+// ── Backend URL Configuration ─────────────────────────────────────────────────
+// Automatically selects the correct backend URL based on the environment.
+//
+//  Environment              │ window.location          │ BACKEND_URL
+//  ─────────────────────────┼──────────────────────────┼────────────────────────
+//  Local run.py (direct)    │ localhost:8000            │ "" (relative, FastAPI
+//                           │                           │  serves the frontend)
+//  Local Live Server        │ localhost:5500            │ http://localhost:8000
+//  Local file:// open       │ file:///...               │ http://localhost:8000
+//  Local Docker (Nginx)     │ localhost:3000            │ "" (relative, Nginx
+//                           │                           │  proxies to backend)
+//  AWS / OCI cloud          │ <ip>:3000                 │ "" (relative, Nginx
+//                           │                           │  proxies to backend)
+//
+const Config = (() => {
+  const { protocol, hostname, port } = window.location;
+
+  // Case 1: Opened directly from disk (no server)
+  if (protocol === 'file:') {
+    return { backendUrl: 'http://localhost:8000' };
+  }
+
+  // Case 2: Local dev server on a non-standard port
+  // (e.g. VS Code Live Server :5500, Python http.server :8080)
+  // In these cases the frontend is on a different port from FastAPI,
+  // so we must hit FastAPI's explicit address.
+  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+  const isNonDockerPort = port !== '' && port !== '3000' && port !== '8000';
+  if (isLocalhost && isNonDockerPort) {
+    return { backendUrl: 'http://localhost:8000' };
+  }
+
+  // Case 3: Everything else — served by FastAPI directly (:8000) or Nginx
+  // (:3000 locally, any port on AWS/OCI). Use relative paths so the request
+  // goes to the same host/port serving the page, and Nginx/FastAPI handles it.
+  return { backendUrl: '' };
+})();
+
 const POLL_INTERVAL   = 1000;
-const BACKEND_URL     = 'http://localhost:8000';
+const BACKEND_URL     = Config.backendUrl;
 const STATUS_ENDPOINT = BACKEND_URL + '/status';
 
 const DOM = {};
@@ -108,6 +146,12 @@ async function _poll() {
 
 // ── Apply status ──────────────────────────────────────────────────────────────
 function _apply(s) {
+  // Sync Demo Mode Badge
+  const demoBadge = document.getElementById('demo-mode-badge');
+  if (demoBadge) {
+    demoBadge.style.display = s.demo_mode ? 'flex' : 'none';
+  }
+
   // Sync camera UI state with backend reality
   if (s.camera_ok !== _cameraEnabled) {
     _cameraEnabled = !!s.camera_ok;
@@ -306,11 +350,20 @@ let _cameraMode = 'rtsp'; // 'rtsp' | 'pccam'
 function _initCameraToggles() {
   const btnRtsp  = document.getElementById('btn-rtsp');
   const btnPc    = document.getElementById('btn-pccam');
+  const btnBrow  = document.getElementById('btn-brow-camera');
   const rtspCtrl = document.getElementById('rtsp-controls');
   const pcCtrl   = document.getElementById('pccam-controls');
+  const browCtrl = document.getElementById('browcam-controls');
 
   // Restore persisted mode
   _cameraMode = localStorage.getItem('sfp-cam-mode') || 'rtsp';
+  
+  // If we restored a mode that is hidden in this environment, fallback to rtsp
+  const isCloud = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+  if (_cameraMode === 'pccam' && isCloud) {
+    _cameraMode = 'rtsp';
+  }
+  
   _applyCameraMode(_cameraMode);
 
   if (btnRtsp) btnRtsp.addEventListener('click', () => {
@@ -323,24 +376,38 @@ function _initCameraToggles() {
     localStorage.setItem('sfp-cam-mode', 'pccam');
     _applyCameraMode('pccam');
   });
+  if (btnBrow) btnBrow.addEventListener('click', () => {
+    _cameraMode = 'browcam';
+    localStorage.setItem('sfp-cam-mode', 'browcam');
+    _applyCameraMode('browcam');
+  });
+  
+  const btnStartBrow = document.getElementById('btn-start-browcam');
+  const btnStopBrow = document.getElementById('btn-stop-browcam');
+  if (btnStartBrow) btnStartBrow.addEventListener('click', () => BrowserCamera.start());
+  if (btnStopBrow) btnStopBrow.addEventListener('click', () => BrowserCamera.stop());
 }
 
 function _applyCameraMode(mode) {
   const btnRtsp  = document.getElementById('btn-rtsp');
   const btnPc    = document.getElementById('btn-pccam');
+  const btnBrow  = document.getElementById('btn-brow-camera');
   const rtspCtrl = document.getElementById('rtsp-controls');
   const pcCtrl   = document.getElementById('pccam-controls');
+  const browCtrl = document.getElementById('browcam-controls');
+
+  [btnRtsp, btnPc, btnBrow].forEach(btn => btn?.classList.remove('active'));
+  [rtspCtrl, pcCtrl, browCtrl].forEach(ctrl => { if (ctrl) ctrl.style.display = 'none'; });
 
   if (mode === 'rtsp') {
     btnRtsp?.classList.add('active');
-    btnPc?.classList.remove('active');
     if (rtspCtrl) rtspCtrl.style.display = 'flex';
-    if (pcCtrl)   pcCtrl.style.display   = 'none';
-  } else {
+  } else if (mode === 'pccam') {
     btnPc?.classList.add('active');
-    btnRtsp?.classList.remove('active');
-    if (pcCtrl)   pcCtrl.style.display   = 'flex';
-    if (rtspCtrl) rtspCtrl.style.display = 'none';
+    if (pcCtrl) pcCtrl.style.display = 'flex';
+  } else if (mode === 'browcam') {
+    btnBrow?.classList.add('active');
+    if (browCtrl) browCtrl.style.display = 'flex';
   }
 }
 
@@ -370,42 +437,66 @@ function saveRtsp() {
 // ── Shared: show/hide BOTH camera feeds together ─────────────────────────────
 function _setCamerasOffline() {
   // Detection feed
-  const detImg  = document.getElementById('detection-img');
-  const detPh   = document.getElementById('cam-offline-placeholder');
-  if (detImg) detImg.style.display = 'none';
-  if (detPh)  detPh.style.display  = 'flex';
+  ['detection-img', 'detection-img-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  ['cam-offline-placeholder', 'cam-offline-placeholder-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'flex';
+  });
+  const detBadge = document.getElementById('det-live-badge-2');
+  if (detBadge) detBadge.style.display = 'none';
 
   // Thermal feed
-  const thImg   = document.getElementById('thermal-img');
-  const thPh    = document.getElementById('thermal-offline-placeholder');
-  const thBadge = document.getElementById('thermal-live-badge');
-  if (thImg)   thImg.style.display   = 'none';
-  if (thPh)    thPh.style.display    = 'flex';
-  if (thBadge) thBadge.style.display = 'none';    // hide LIVE badge too
+  ['thermal-img', 'thermal-img-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  ['thermal-offline-placeholder', 'thermal-offline-placeholder-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'flex';
+  });
+  ['thermal-live-badge', 'thermal-live-badge-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
 }
 
 function _setCamerasOnline() {
   const ts = Date.now(); // cache-buster for both feeds
 
   // Detection feed — force new MJPEG connection to drop the offline JPEG
-  const detImg  = document.getElementById('detection-img');
-  const detPh   = document.getElementById('cam-offline-placeholder');
-  if (detImg) {
-    detImg.src = 'http://localhost:8000/video?t=' + ts;
-    detImg.style.display = 'block';
-  }
-  if (detPh) detPh.style.display = 'none';
+  ['detection-img', 'detection-img-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.src = BACKEND_URL + '/video?t=' + ts;
+      el.style.display = 'block';
+    }
+  });
+  ['cam-offline-placeholder', 'cam-offline-placeholder-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  const detBadge = document.getElementById('det-live-badge-2');
+  if (detBadge) detBadge.style.display = '';
 
   // Thermal feed — force new MJPEG connection
-  const thImg   = document.getElementById('thermal-img');
-  const thPh    = document.getElementById('thermal-offline-placeholder');
-  const thBadge = document.getElementById('thermal-live-badge');
-  if (thImg) {
-    thImg.src = 'http://localhost:8000/thermal?t=' + ts;
-    thImg.style.display = 'block';
-  }
-  if (thPh)    thPh.style.display    = 'none';
-  if (thBadge) thBadge.style.display = '';
+  ['thermal-img', 'thermal-img-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.src = BACKEND_URL + '/thermal?t=' + ts;
+      el.style.display = 'block';
+    }
+  });
+  ['thermal-offline-placeholder', 'thermal-offline-placeholder-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  ['thermal-live-badge', 'thermal-live-badge-2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = '';
+  });
 }
 
 function startPcCam() {
@@ -428,6 +519,10 @@ function stopStream() {
     .then(() => {
       _setConnStatus('Stopped', '');
       _setCamerasOffline();
+      // Sync the Cameras section panel status if it's loaded
+      if (typeof RtspPanel !== 'undefined' && RtspPanel.onStreamStopped) {
+        RtspPanel.onStreamStopped();
+      }
     });
 }
 
@@ -510,6 +605,8 @@ function _initSettings() {
       _applySettingUI('fire', d.fire_alerts);
       _applySettingUI('smoke', d.smoke_alerts);
       _applySettingUI('telegram', d.telegram_alerts);
+      _applySettingUI('demo-mode', d.demo_mode);
+      _applyDemoModeState(d.demo_mode);
     })
     .catch(e => console.warn('[Settings fetch failed]', e));
     
@@ -536,6 +633,8 @@ function updateSetting(key, value) {
       _applySettingUI('fire', s.fire_alerts);
       _applySettingUI('smoke', s.smoke_alerts);
       _applySettingUI('telegram', s.telegram_alerts);
+      _applySettingUI('demo-mode', s.demo_mode);
+      _applyDemoModeState(s.demo_mode);
     }
   })
   .catch(e => console.warn('[Settings update failed]', e));
@@ -557,3 +656,152 @@ function _applySettingUI(type, isEnabled) {
     }
   });
 }
+
+function _applyDemoModeState(isDemoMode) {
+  const toggleIds = [
+    'setting-fire', 'setting-smoke', 'setting-telegram', 'setting-twilio',
+    'setting-fire-page', 'setting-smoke-page', 'setting-telegram-page', 'setting-twilio-page'
+  ];
+  
+  toggleIds.forEach(id => {
+    const cb = document.getElementById(id);
+    if (cb) {
+      cb.disabled = isDemoMode;
+      // Visually gray out the parent container
+      const parent = cb.closest('.toggle-row') || cb.closest('.settings-page-toggle');
+      if (parent) {
+        parent.style.opacity = isDemoMode ? '0.5' : '1';
+        parent.style.pointerEvents = isDemoMode ? 'none' : 'auto';
+      }
+    }
+  });
+
+
+}
+
+// ── Browser Camera Module (Cloud Mode via WebSockets) ─────────────────────────
+const BrowserCamera = (() => {
+  let _stream = null;
+  let _ws = null;
+  let _videoEl = null;
+  let _canvas = null;
+  let _ctx = null;
+  let _sendTimer = null;
+  let _isActive = false;
+
+  function initElements() {
+    if (!_videoEl) {
+      _videoEl = document.createElement('video');
+      _videoEl.autoplay = true;
+      _videoEl.playsInline = true;
+      _videoEl.muted = true;
+      _videoEl.style.display = 'none';
+      document.body.appendChild(_videoEl);
+    }
+    if (!_canvas) {
+      _canvas = document.createElement('canvas');
+      _canvas.style.display = 'none';
+      document.body.appendChild(_canvas);
+      _ctx = _canvas.getContext('2d', { willReadFrequently: true });
+    }
+  }
+
+  async function start() {
+    if (_isActive) return;
+    initElements();
+    _setConnStatus('Requesting Camera...', '');
+
+    try {
+      _stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
+      _videoEl.srcObject = _stream;
+      await _videoEl.play();
+      
+      _canvas.width = _videoEl.videoWidth;
+      _canvas.height = _videoEl.videoHeight;
+      
+      _connectWebSocket();
+      _isActive = true;
+      _setConnStatus('Browser Camera Active', 'connected');
+    } catch (err) {
+      console.error('[BrowserCamera] getUserMedia failed:', err);
+      _setConnStatus('Camera Denied or Missing', 'failed');
+    }
+  }
+
+  function _connectWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    let wsUrl = '';
+    
+    // BACKEND_URL is determined dynamically at the top of main.js
+    if (BACKEND_URL !== '') {
+      wsUrl = BACKEND_URL.replace(/^http/, 'ws') + '/ws/browser-camera';
+    } else {
+      wsUrl = protocol + '//' + window.location.host + '/ws/browser-camera';
+    }
+
+    _ws = new WebSocket(wsUrl);
+
+    _ws.onopen = () => {
+      console.log('[BrowserCamera] WebSocket connected');
+      // Send frames at ~10 FPS
+      _sendTimer = setInterval(_sendFrame, 100);
+    };
+
+    _ws.onclose = () => {
+      console.log('[BrowserCamera] WebSocket closed');
+      if (_isActive) {
+        _setConnStatus('Connection Lost, Retrying...', 'failed');
+        setTimeout(_connectWebSocket, 3000);
+      }
+    };
+    
+    _ws.onerror = (err) => {
+      console.error('[BrowserCamera] WebSocket error:', err);
+    };
+  }
+
+  function _sendFrame() {
+    if (!_ws || _ws.readyState !== WebSocket.OPEN) return;
+    if (_videoEl.readyState >= 2) {
+      _ctx.drawImage(_videoEl, 0, 0, _canvas.width, _canvas.height);
+      const dataUrl = _canvas.toDataURL('image/jpeg', 0.7); // 70% quality JPEG
+      _ws.send(dataUrl);
+    }
+  }
+
+  function stop() {
+    _isActive = false;
+    if (_sendTimer) {
+      clearInterval(_sendTimer);
+      _sendTimer = null;
+    }
+    if (_ws) {
+      _ws.close();
+      _ws = null;
+    }
+    if (_stream) {
+      _stream.getTracks().forEach(t => t.stop());
+      _stream = null;
+    }
+    _setConnStatus('Idle', '');
+    _setCamerasOffline();
+  }
+
+  return { start, stop };
+})();
+
+// ── Capability Detection (UI adjustment) ──────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const isCloud = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+  const btnPc = document.getElementById('btn-pccam');
+  const btnBrow = document.getElementById('btn-brow-camera');
+  
+  if (btnPc && isCloud) {
+    // Hide PC Camera on cloud deployments
+    btnPc.style.display = 'none';
+  }
+  if (btnBrow) {
+    // Always show Browser Camera (even locally for testing)
+    btnBrow.style.display = '';
+  }
+});

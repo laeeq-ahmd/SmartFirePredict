@@ -88,6 +88,10 @@ class TwilioNotifier:
     # ── Twilio REST API call ──────────────────────────────────────────────────
 
     def _make_call(self, detection_class: str, confidence: float, source: str):
+        if self._settings.get_all().get("demo_mode", False):
+            print("[DEMO MODE] Twilio call skipped")
+            return
+
         try:
             from twilio.rest import Client   # lazy import — only needed when actually calling
             client = Client(self._account_sid, self._auth_token)
