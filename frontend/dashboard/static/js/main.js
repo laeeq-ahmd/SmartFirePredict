@@ -350,11 +350,20 @@ let _cameraMode = 'rtsp'; // 'rtsp' | 'pccam'
 function _initCameraToggles() {
   const btnRtsp  = document.getElementById('btn-rtsp');
   const btnPc    = document.getElementById('btn-pccam');
+  const btnBrow  = document.getElementById('btn-brow-camera');
   const rtspCtrl = document.getElementById('rtsp-controls');
   const pcCtrl   = document.getElementById('pccam-controls');
+  const browCtrl = document.getElementById('browcam-controls');
 
   // Restore persisted mode
   _cameraMode = localStorage.getItem('sfp-cam-mode') || 'rtsp';
+  
+  // If we restored a mode that is hidden in this environment, fallback to rtsp
+  const isCloud = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+  if (_cameraMode === 'pccam' && isCloud) {
+    _cameraMode = 'rtsp';
+  }
+  
   _applyCameraMode(_cameraMode);
 
   if (btnRtsp) btnRtsp.addEventListener('click', () => {
@@ -367,24 +376,38 @@ function _initCameraToggles() {
     localStorage.setItem('sfp-cam-mode', 'pccam');
     _applyCameraMode('pccam');
   });
+  if (btnBrow) btnBrow.addEventListener('click', () => {
+    _cameraMode = 'browcam';
+    localStorage.setItem('sfp-cam-mode', 'browcam');
+    _applyCameraMode('browcam');
+  });
+  
+  const btnStartBrow = document.getElementById('btn-start-browcam');
+  const btnStopBrow = document.getElementById('btn-stop-browcam');
+  if (btnStartBrow) btnStartBrow.addEventListener('click', () => BrowserCamera.start());
+  if (btnStopBrow) btnStopBrow.addEventListener('click', () => BrowserCamera.stop());
 }
 
 function _applyCameraMode(mode) {
   const btnRtsp  = document.getElementById('btn-rtsp');
   const btnPc    = document.getElementById('btn-pccam');
+  const btnBrow  = document.getElementById('btn-brow-camera');
   const rtspCtrl = document.getElementById('rtsp-controls');
   const pcCtrl   = document.getElementById('pccam-controls');
+  const browCtrl = document.getElementById('browcam-controls');
+
+  [btnRtsp, btnPc, btnBrow].forEach(btn => btn?.classList.remove('active'));
+  [rtspCtrl, pcCtrl, browCtrl].forEach(ctrl => { if (ctrl) ctrl.style.display = 'none'; });
 
   if (mode === 'rtsp') {
     btnRtsp?.classList.add('active');
-    btnPc?.classList.remove('active');
     if (rtspCtrl) rtspCtrl.style.display = 'flex';
-    if (pcCtrl)   pcCtrl.style.display   = 'none';
-  } else {
+  } else if (mode === 'pccam') {
     btnPc?.classList.add('active');
-    btnRtsp?.classList.remove('active');
-    if (pcCtrl)   pcCtrl.style.display   = 'flex';
-    if (rtspCtrl) rtspCtrl.style.display = 'none';
+    if (pcCtrl) pcCtrl.style.display = 'flex';
+  } else if (mode === 'browcam') {
+    btnBrow?.classList.add('active');
+    if (browCtrl) browCtrl.style.display = 'flex';
   }
 }
 
@@ -655,3 +678,130 @@ function _applyDemoModeState(isDemoMode) {
 
 
 }
+
+// ── Browser Camera Module (Cloud Mode via WebSockets) ─────────────────────────
+const BrowserCamera = (() => {
+  let _stream = null;
+  let _ws = null;
+  let _videoEl = null;
+  let _canvas = null;
+  let _ctx = null;
+  let _sendTimer = null;
+  let _isActive = false;
+
+  function initElements() {
+    if (!_videoEl) {
+      _videoEl = document.createElement('video');
+      _videoEl.autoplay = true;
+      _videoEl.playsInline = true;
+      _videoEl.muted = true;
+      _videoEl.style.display = 'none';
+      document.body.appendChild(_videoEl);
+    }
+    if (!_canvas) {
+      _canvas = document.createElement('canvas');
+      _canvas.style.display = 'none';
+      document.body.appendChild(_canvas);
+      _ctx = _canvas.getContext('2d', { willReadFrequently: true });
+    }
+  }
+
+  async function start() {
+    if (_isActive) return;
+    initElements();
+    _setConnStatus('Requesting Camera...', '');
+
+    try {
+      _stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
+      _videoEl.srcObject = _stream;
+      await _videoEl.play();
+      
+      _canvas.width = _videoEl.videoWidth;
+      _canvas.height = _videoEl.videoHeight;
+      
+      _connectWebSocket();
+      _isActive = true;
+      _setConnStatus('Browser Camera Active', 'connected');
+    } catch (err) {
+      console.error('[BrowserCamera] getUserMedia failed:', err);
+      _setConnStatus('Camera Denied or Missing', 'failed');
+    }
+  }
+
+  function _connectWebSocket() {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    let wsUrl = '';
+    
+    // BACKEND_URL is determined dynamically at the top of main.js
+    if (BACKEND_URL !== '') {
+      wsUrl = BACKEND_URL.replace(/^http/, 'ws') + '/ws/browser-camera';
+    } else {
+      wsUrl = protocol + '//' + window.location.host + '/ws/browser-camera';
+    }
+
+    _ws = new WebSocket(wsUrl);
+
+    _ws.onopen = () => {
+      console.log('[BrowserCamera] WebSocket connected');
+      // Send frames at ~10 FPS
+      _sendTimer = setInterval(_sendFrame, 100);
+    };
+
+    _ws.onclose = () => {
+      console.log('[BrowserCamera] WebSocket closed');
+      if (_isActive) {
+        _setConnStatus('Connection Lost, Retrying...', 'failed');
+        setTimeout(_connectWebSocket, 3000);
+      }
+    };
+    
+    _ws.onerror = (err) => {
+      console.error('[BrowserCamera] WebSocket error:', err);
+    };
+  }
+
+  function _sendFrame() {
+    if (!_ws || _ws.readyState !== WebSocket.OPEN) return;
+    if (_videoEl.readyState >= 2) {
+      _ctx.drawImage(_videoEl, 0, 0, _canvas.width, _canvas.height);
+      const dataUrl = _canvas.toDataURL('image/jpeg', 0.7); // 70% quality JPEG
+      _ws.send(dataUrl);
+    }
+  }
+
+  function stop() {
+    _isActive = false;
+    if (_sendTimer) {
+      clearInterval(_sendTimer);
+      _sendTimer = null;
+    }
+    if (_ws) {
+      _ws.close();
+      _ws = null;
+    }
+    if (_stream) {
+      _stream.getTracks().forEach(t => t.stop());
+      _stream = null;
+    }
+    _setConnStatus('Idle', '');
+    _setCamerasOffline();
+  }
+
+  return { start, stop };
+})();
+
+// ── Capability Detection (UI adjustment) ──────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const isCloud = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+  const btnPc = document.getElementById('btn-pccam');
+  const btnBrow = document.getElementById('btn-brow-camera');
+  
+  if (btnPc && isCloud) {
+    // Hide PC Camera on cloud deployments
+    btnPc.style.display = 'none';
+  }
+  if (btnBrow) {
+    // Always show Browser Camera (even locally for testing)
+    btnBrow.style.display = '';
+  }
+});

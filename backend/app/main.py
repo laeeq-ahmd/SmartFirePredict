@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-from app.api import video, control, detection, status, location, rtsp
+from app.api import video, control, detection, status, location, rtsp, ws
 from app.core.state import video_stream, detector, esp32_monitor
 
 @asynccontextmanager
@@ -58,6 +58,7 @@ app.include_router(detection.router, tags=["AI Detections"])
 app.include_router(status.router,    tags=["System Status"])
 app.include_router(location.router,  tags=["Location"])
 app.include_router(rtsp.router,      tags=["RTSP Settings"])
+app.include_router(ws.router,        prefix="/ws", tags=["WebSockets"])
 
 # Serve frontend
 frontend_path = os.path.abspath(

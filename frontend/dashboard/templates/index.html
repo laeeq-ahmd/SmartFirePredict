@@ -253,6 +253,7 @@
             <div class="toggle-group">
               <button class="toggle-btn active" id="btn-rtsp">RTSP Stream</button>
               <button class="toggle-btn" id="btn-pccam">PC Camera</button>
+              <button class="toggle-btn" id="btn-brow-camera" style="display:none;">Browser Camera</button>
             </div>
             <!-- RTSP controls — shown when RTSP mode active -->
             <div id="rtsp-controls" style="display:flex;align-items:center;gap:8px;flex:1;">
@@ -265,6 +266,11 @@
             <div id="pccam-controls" style="display:none;align-items:center;gap:8px;">
               <button class="btn-save" id="btn-start-pccam" onclick="startPcCam()">Start Camera</button>
               <button class="btn-test" id="btn-stop-stream" onclick="stopStream()">Stop</button>
+            </div>
+            <!-- Browser Camera controls — shown when Browser Camera mode active -->
+            <div id="browcam-controls" style="display:none;align-items:center;gap:8px;">
+              <button class="btn-save" id="btn-start-browcam">Start Browser Camera</button>
+              <button class="btn-test" id="btn-stop-browcam">Stop</button>
             </div>
             <div class="conn-status" id="cam-conn-status">
               <span>●</span> <span id="cam-conn-label">Idle</span>
@@ -790,7 +796,8 @@
                 <div class="settings-page-item">
                   <div class="settings-page-label">
                     <span class="settings-page-label-title" style="color:var(--accent);">Demo Mode</span>
-                    <span class="settings-page-label-sub">Disables real Telegram and Twilio alerts for public demonstrations.</span>
+                    <span class="settings-page-label-sub">Disables real Telegram and Twilio alerts for public demonstrations.<br>
+                    <strong style="color:var(--text-primary);">Note:</strong> This deployed cloud version cannot be configured for real Telegram and Twilio alerts. To test real-time alerts, please run the project locally and setup the <code>.env</code> file.</span>
                   </div>
                   <div class="settings-page-toggle">
                     <label class="pill-switch"><input type="checkbox" id="setting-demo-mode-page"
@@ -894,6 +901,17 @@
             <h2 style="color:var(--accent);font-size:1.4rem;margin-bottom:8px;">SmartFirePredict</h2>
             <p style="color:var(--text-secondary);font-size:0.82rem;line-height:1.7;">Real-time AI + IoT fire and smoke
               detection system. Built with FastAPI, YOLOv8, OpenCV, Leaflet, and ESP32 hardware integration.</p>
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid #333;">
+              <p style="color:var(--text-primary);font-size:0.9rem;font-weight:500;">Built by Laeeq Ahmed</p>
+              <p style="color:var(--text-secondary);font-size:0.82rem;margin-top:4px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:text-bottom;margin-right:4px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                <a href="mailto:laeeq.amd@gmail.com" style="color:var(--accent);text-decoration:none;">laeeq.amd@gmail.com</a>
+              </p>
+              <p style="color:var(--text-secondary);font-size:0.82rem;margin-top:4px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:text-bottom;margin-right:4px;"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                <a href="https://github.com/laeeq-ahmd/" target="_blank" style="color:var(--accent);text-decoration:none;">github.com/laeeq-ahmd</a>
+              </p>
+            </div>
             <p style="margin-top:12px;color:var(--text-muted);font-size:0.72rem;">Version 1.0.0</p>
           </div>
         </div>
