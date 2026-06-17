@@ -8,3 +8,4 @@ python-dotenv>=1.0.0
 requests>=2.31.0
 pyserial>=3.5
 twilio>=8.0.0
+websockets>=12.0

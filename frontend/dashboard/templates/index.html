@@ -707,6 +707,11 @@
               </div>
             </details>
 
+            <!-- Network Warning -->
+            <div style="margin-top:16px;padding:12px;background:rgba(255,165,0,0.1);border-left:4px solid var(--accent);border-radius:4px;font-size:0.8rem;color:var(--text-secondary);">
+              <strong style="color:var(--accent);">Note on Cloud Deployment:</strong> To successfully stream via RTSP, the CCTV camera and the server must be on the same local network, or the camera must have a public static IP. Since this demo is deployed on the cloud, it cannot access your local home network's CCTV cameras. <strong>Please test RTSP streaming locally</strong> on your own machine.
+            </div>
+
             <!-- Action Buttons -->
             <div class="rtsp-form-actions">
               <button class="btn-test" id="btn-rtsp-test" onclick="testRtspConnection()">Test Connection</button>
