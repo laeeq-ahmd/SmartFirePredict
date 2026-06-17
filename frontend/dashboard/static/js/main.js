@@ -447,7 +447,7 @@ function _setCamerasOnline() {
   ['detection-img', 'detection-img-2'].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
-      el.src = 'http://localhost:8000/video?t=' + ts;
+      el.src = BACKEND_URL + '/video?t=' + ts;
       el.style.display = 'block';
     }
   });
@@ -462,7 +462,7 @@ function _setCamerasOnline() {
   ['thermal-img', 'thermal-img-2'].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
-      el.src = 'http://localhost:8000/thermal?t=' + ts;
+      el.src = BACKEND_URL + '/thermal?t=' + ts;
       el.style.display = 'block';
     }
   });

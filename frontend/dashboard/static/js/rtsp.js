@@ -6,7 +6,9 @@
 
 const RtspPanel = (() => {
 
-  const BACKEND = 'http://localhost:8000';
+  // Use the same runtime-detected backend URL as main.js.
+  // Config is declared in main.js which loads before this file on every page.
+  const BACKEND = (typeof Config !== 'undefined') ? Config.backendUrl : '';
 
   // Field element refs
   let _ip, _port, _username, _password, _channel, _subtype, _urlPreview;
