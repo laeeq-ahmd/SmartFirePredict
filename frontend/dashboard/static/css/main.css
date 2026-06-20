@@ -301,61 +301,98 @@ body {
 
 /* ─── Mobile Responsive ─────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  /* Sidebar becomes bottom tab bar */
+
+  /* App shell stacks vertically */
   .app-layout {
     flex-direction: column;
+    height: 100dvh;
   }
 
+  /* Sidebar becomes a fixed bottom tab bar */
   .sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     width: 100%;
-    height: auto;
+    height: 58px;
     flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
     border-right: none;
     border-top: 1px solid var(--border);
-    order: 2;
-    padding: 8px 12px;
-    justify-content: space-around;
-    overflow-x: auto;
+    padding: 4px 4px env(safe-area-inset-bottom, 4px);
+    z-index: 200;
+    background: var(--bg-sidebar);
+    backdrop-filter: blur(12px);
+    overflow: visible;
+    /* cancel desktop flex-shrink / padding */
+    flex-shrink: 0;
   }
 
+  /* Hide the logo only; show every nav item including sidebar-bottom ones */
   .sidebar-logo { display: none; }
-  .sidebar-bottom { display: none; }
 
+  /* Make sidebar-bottom flow inline into the tab bar */
+  .sidebar-bottom {
+    display: contents;
+  }
+
+  /* Make sidebar-nav flow inline too */
   .sidebar-nav {
-    flex-direction: row;
-    gap: 0;
-    width: 100%;
-    justify-content: space-around;
+    display: contents;
   }
 
+  /* Each nav item: equal flexible tab */
   .nav-item {
-    width: 40px;
-    height: 44px;
+    flex: 1;
+    width: auto;
+    max-width: 64px;
+    height: 50px;
+    border-radius: 10px;
+    flex-direction: column;
+    gap: 2px;
   }
 
+  .nav-item .nav-label {
+    font-size: 0.50rem;
+    display: block;
+  }
+
+  /* Main content sits above the tab bar */
   .main-content {
     order: 1;
-    height: calc(100vh - 60px);
+    flex: 1;
+    height: calc(100dvh - 58px);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    /* add bottom padding so tab bar never covers content */
+    padding-bottom: 0;
   }
 
-  body { overflow: hidden; }
+  /* Dashboard scroll area must scroll on touch */
+  .dashboard {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 10px 24px;
+  }
 
-  /* Status row stacks on mobile */
+  /* Footer hidden on mobile (tab bar replaces it) */
+  .dashboard-footer {
+    display: none;
+  }
+
+  /* Status row: 2-col; risk card full-width */
   .status-row {
     grid-template-columns: 1fr 1fr;
     gap: 8px;
   }
 
-  /* Risk card takes full width */
   .status-row > .card:first-child {
     grid-column: 1 / -1;
-  }
-
-  /* Camera source bar wraps */
-  .camera-source-bar {
-    flex-wrap: wrap;
-    gap: 8px;
   }
 
   /* Camera feeds stack */
@@ -363,26 +400,42 @@ body {
     grid-template-columns: 1fr !important;
   }
 
-  /* Metrics bar scrollable */
+  /* Camera source bar wraps */
+  .camera-source-bar {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Metrics bar: horizontal scroll */
   .metrics-bar {
     overflow-x: auto;
     flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
   }
 
-  /* Top header compact */
+  /* Header compact */
   .top-header {
     padding: 0 12px;
+    flex-shrink: 0;
   }
 
   .header-brand p { display: none; }
 
-  /* About pills stack on small screens */
+  /* Demo banner compact */
+  .demo-mode-banner {
+    font-size: 0.60rem;
+    padding: 3px 6px;
+    max-width: 180px;
+    text-align: center;
+  }
+
+  /* About pills stack */
   .about-author-card {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  /* Settings page items stack */
+  /* Settings items stack */
   .settings-page-item {
     flex-direction: column;
     gap: 8px;
@@ -394,25 +447,14 @@ body {
     flex-direction: column;
   }
 
-  /* Map fullscreen height reduce on mobile */
+  /* Map height */
   .map-container {
     height: 45vh !important;
   }
-
-  /* Dashboard padding reduce */
-  .dashboard {
-    padding: 10px 10px 10px;
-  }
-
-  /* Demo mode badge wraps on mobile */
-  .demo-mode-banner {
-    font-size: 0.65rem;
-    padding: 4px 8px;
-  }
 }
 
+/* ─── Extra-small phones (< 480px) ─────────────────────────────────────────── */
 @media (max-width: 480px) {
-  /* Extra small phones */
   .status-row {
     grid-template-columns: 1fr;
   }
