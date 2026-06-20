@@ -330,24 +330,34 @@ body {
     flex-shrink: 0;
   }
 
-  /* Hide the logo only; show every nav item including sidebar-bottom ones */
+  /* Hide logo only */
   .sidebar-logo { display: none; }
 
-  /* Make sidebar-bottom flow inline into the tab bar */
-  .sidebar-bottom {
-    display: contents;
-  }
-
-  /* Make sidebar-nav flow inline too */
+  /* Nav and bottom both become horizontal rows */
   .sidebar-nav {
-    display: contents;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    flex: 1;
+    width: auto;
+    gap: 0;
   }
 
-  /* Each nav item: equal flexible tab */
+  .sidebar-bottom {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    width: auto;
+    gap: 0;
+  }
+
+  /* Each tab item */
   .nav-item {
     flex: 1;
     width: auto;
-    max-width: 64px;
+    max-width: 60px;
     height: 50px;
     border-radius: 10px;
     flex-direction: column;
