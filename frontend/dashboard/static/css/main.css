@@ -242,3 +242,196 @@ body {
   gap: 5px;
   color: var(--green);
 }
+
+/* ─── About Section — Pill Style ───────────────────────────────────────────── */
+.about-author-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.about-built-by {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.about-built-by strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.about-contact-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.about-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  background: var(--bg-card-2);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.about-pill:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.about-pill svg {
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+/* ─── Mobile Responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Sidebar becomes bottom tab bar */
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    order: 2;
+    padding: 8px 12px;
+    justify-content: space-around;
+    overflow-x: auto;
+  }
+
+  .sidebar-logo { display: none; }
+  .sidebar-bottom { display: none; }
+
+  .sidebar-nav {
+    flex-direction: row;
+    gap: 0;
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .nav-item {
+    width: 40px;
+    height: 44px;
+  }
+
+  .main-content {
+    order: 1;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+  }
+
+  body { overflow: hidden; }
+
+  /* Status row stacks on mobile */
+  .status-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  /* Risk card takes full width */
+  .status-row > .card:first-child {
+    grid-column: 1 / -1;
+  }
+
+  /* Camera source bar wraps */
+  .camera-source-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Camera feeds stack */
+  .cameras-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Metrics bar scrollable */
+  .metrics-bar {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  /* Top header compact */
+  .top-header {
+    padding: 0 12px;
+  }
+
+  .header-brand p { display: none; }
+
+  /* About pills stack on small screens */
+  .about-author-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Settings page items stack */
+  .settings-page-item {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  /* RTSP form rows stack */
+  .rtsp-form-row {
+    flex-direction: column;
+  }
+
+  /* Map fullscreen height reduce on mobile */
+  .map-container {
+    height: 45vh !important;
+  }
+
+  /* Dashboard padding reduce */
+  .dashboard {
+    padding: 10px 10px 10px;
+  }
+
+  /* Demo mode badge wraps on mobile */
+  .demo-mode-banner {
+    font-size: 0.65rem;
+    padding: 4px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small phones */
+  .status-row {
+    grid-template-columns: 1fr;
+  }
+
+  #risk-level-text {
+    font-size: 2rem;
+  }
+
+  .toggle-group {
+    flex-wrap: wrap;
+  }
+
+  .about-contact-pills {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .about-pill {
+    width: 100%;
+    justify-content: center;
+  }
+}
