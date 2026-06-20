@@ -1,0 +1,45 @@
+name: CD Pipeline
+
+# Triggers after CI passes on main — deploys to AWS EC2
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Deploy to AWS EC2
+    runs-on: ubuntu-latest
+
+    # Only run if CI actually passed — never deploy a broken build
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            set -e
+            echo "=== [CD] Starting deployment ==="
+
+            cd ~/SmartFirePredict
+
+            echo "=== [CD] Pulling latest code from main ==="
+            git fetch origin main
+            git checkout main
+            git pull origin main
+
+            echo "=== [CD] Rebuilding and restarting Docker containers ==="
+            sudo docker compose pull --quiet || true
+            sudo docker compose up -d --build --remove-orphans
+
+            echo "=== [CD] Removing unused Docker images ==="
+            sudo docker image prune -f
+
+            echo "=== [CD] Deployment complete ==="
+            sudo docker compose ps
