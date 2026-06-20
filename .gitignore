@@ -7,6 +7,10 @@ __pycache__/
 # Environment Variables
 .env
 
+# SSH Keys — never commit these
+*.pem
+*.key
+
 # Virtual Environments
 venv/
 env/
