@@ -16,6 +16,43 @@ The live demo runs in **Demo Mode** by default, which disables real Telegram and
 
 ---
 
+## Testing the Detection (Quick Start)
+
+You do not need a real fire or CCTV camera to test the system. Here are the easiest ways to trigger detections:
+
+### Option 1 — Show a fire image from your phone (safest)
+
+1. Open the dashboard -> **Cameras** tab -> click **Browser Camera** -> **Start Browser Camera**
+2. On your phone, open Google Images and search for "fire" or "smoke"
+3. Hold your phone screen up in front of your laptop/PC webcam
+4. The model will detect the fire or smoke in the image and update the risk score in real-time
+
+### Option 2 — Use a lighter (local run only)
+
+1. Start the system locally and open a camera feed
+2. Flick a lighter or strike a match in front of the webcam
+3. The model will detect the flame, the risk score will jump to HIGH, and (if Demo Mode is off) Telegram and Twilio alerts will fire
+
+> Keep flame well away from the screen and any flammable materials. Only do this in a safe, open environment.
+
+### Option 3 — Play a fire video on a second screen
+
+1. On a second monitor or phone, open a YouTube video of fire (search "fire burning close up")
+2. Point the webcam at the screen
+3. This is the safest way to get sustained detection for testing the 30-second cooldown and escalation behaviour
+
+### What to watch on the dashboard
+
+| Indicator | What it means |
+|-----------|--------------|
+| Risk banner changes to HIGH (red) | Fire or flame detected |
+| Risk banner changes to MEDIUM (yellow) | Smoke detected |
+| Risk Score gauge increases | Weighted detection confidence |
+| System Status -> Camera shows green | Feed is active and being processed |
+| Telegram cooldown timer appears | Alert was sent; next alert suppressed for 30s |
+
+---
+
 ## Features
 
 - Real-time fire and smoke detection using **YOLOv8**
