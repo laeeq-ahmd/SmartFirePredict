@@ -957,16 +957,20 @@
   </div>
 
   <style>
+    /* Hidden by default — JS adds .is-visible to show it */
     #welcome-modal-overlay {
+      display: none;
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.75);
       backdrop-filter: blur(6px);
       z-index: 9999;
-      display: flex !important;
       align-items: center;
       justify-content: center;
       padding: 16px;
+    }
+    #welcome-modal-overlay.is-visible {
+      display: flex;
       animation: fadeInOverlay 0.3s ease;
     }
     @keyframes fadeInOverlay {
@@ -1049,18 +1053,21 @@
 
   <script>
     (function () {
-      const STORAGE_KEY = 'sfp_welcome_seen';
-      if (!localStorage.getItem(STORAGE_KEY)) {
-        document.getElementById('welcome-modal-overlay').style.display = 'flex';
+      if (!localStorage.getItem('sfp_welcome_seen')) {
+        document.getElementById('welcome-modal-overlay').classList.add('is-visible');
       }
     })();
 
     function dismissWelcomeModal() {
       localStorage.setItem('sfp_welcome_seen', '1');
-      const overlay = document.getElementById('welcome-modal-overlay');
+      var overlay = document.getElementById('welcome-modal-overlay');
       overlay.style.opacity = '0';
       overlay.style.transition = 'opacity 0.25s ease';
-      setTimeout(() => { overlay.style.display = 'none'; }, 260);
+      setTimeout(function () {
+        overlay.classList.remove('is-visible');
+        overlay.style.opacity = '';
+        overlay.style.transition = '';
+      }, 260);
     }
   </script>
 
