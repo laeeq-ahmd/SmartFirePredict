@@ -8,6 +8,13 @@
 
 **[https://smartfirepredict-aws.duckdns.org](https://smartfirepredict-aws.duckdns.org)**
 
+> [!WARNING]
+> **Demo Currently Unavailable**
+>
+> The cloud-hosted demo is currently offline. The project was previously deployed on an AWS EC2 free-tier instance for demonstration purposes, but the public deployment has been discontinued.
+>
+> To explore the project, please run it locally using the setup instructions below.
+
 > **Performance Notice:** This demo is hosted on an **AWS EC2 `t2.micro` free-tier instance** (1 vCPU, 1 GB RAM). AI inference runs on CPU only, which makes the live video feed noticeably slow and laggy. This is expected and purely a hardware limitation of the free tier.
 >
 > For a smooth, real-time experience — especially with live camera feeds and AI detection — **run the project locally** on your own machine using the instructions below.
