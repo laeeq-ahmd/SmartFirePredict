@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartFirePredict — Demo Discontinued</title>
+  <meta name="description" content="SmartFirePredict public demo has been discontinued. View the open-source project on GitHub." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:      #ff6b00;
+      --accent-glow: rgba(255, 107, 0, 0.30);
+      --accent-dim:  rgba(255, 107, 0, 0.08);
+      --bg:          #0a0a0a;
+      --card-bg:     rgba(20, 20, 20, 0.85);
+      --border:      rgba(255, 255, 255, 0.07);
+      --border-acc:  rgba(255, 107, 0, 0.25);
+      --text-1:      #f0f0f0;
+      --text-2:      #888;
+      --text-3:      #555;
+      --green:       #00e676;
+      --red:         #ff1744;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text-1);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Animated background ──────────────────────────── */
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(255,107,0,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(255,60,0,0.07) 0%, transparent 60%),
+        #0a0a0a;
+    }
+
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+    }
+
+    /* ── Page layout ─────────────────────────────────── */
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px 48px;
+      gap: 0;
+    }
+
+    /* ── Logo / brand ────────────────────────────────── */
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 36px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .logo-icon {
+      width: 52px;
+      height: 52px;
+      background: var(--accent-dim);
+      border: 1px solid var(--border-acc);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      box-shadow: 0 0 28px var(--accent-glow);
+      flex-shrink: 0;
+    }
+
+    .logo-text h1 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text-1);
+    }
+
+    .logo-text p {
+      font-size: 0.72rem;
+      color: var(--text-2);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+
+    /* ── Main card ───────────────────────────────────── */
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-acc);
+      border-radius: 20px;
+      padding: 40px 36px 36px;
+      backdrop-filter: blur(20px);
+      box-shadow:
+        0 0 0 1px rgba(255,107,0,0.08),
+        0 24px 80px rgba(0,0,0,0.6),
+        0 0 60px rgba(255,107,0,0.08);
+      animation: fadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+    }
+
+    /* ── Status badge ────────────────────────────────── */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 12px;
+      background: rgba(255, 23, 68, 0.10);
+      border: 1px solid rgba(255, 23, 68, 0.25);
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--red);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--red);
+    }
+
+    /* ── Card content ────────────────────────────────── */
+    .card-title {
+      font-size: 1.55rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text-1);
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .card-title span {
+      color: var(--accent);
+    }
+
+    .card-desc {
+      font-size: 0.875rem;
+      color: var(--text-2);
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+
+    /* ── Info list ───────────────────────────────────── */
+    .info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 32px;
+      padding: 18px 20px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .info-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.8rem;
+      color: var(--text-2);
+      line-height: 1.5;
+    }
+
+    .info-item-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+      margin-top: 6px;
+    }
+
+    .info-item strong {
+      color: var(--text-1);
+    }
+
+    /* ── Buttons ─────────────────────────────────────── */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 20px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      border: none;
+      letter-spacing: 0.01em;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .btn-primary:hover {
+      background: #ff8c38;
+      box-shadow: 0 0 24px rgba(255,107,0,0.45);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      flex: 1;
+      justify-content: center;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.08);
+      color: var(--text-1);
+      border-color: rgba(255,255,255,0.15);
+      transform: translateY(-1px);
+    }
+
+    /* ── SVG icons ───────────────────────────────────── */
+    .btn svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    /* ── Divider ─────────────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 28px 0;
+    }
+
+    /* ── Project stats row ───────────────────────────── */
+    .stats-row {
+      display: flex;
+      gap: 0;
+    }
+
+    .stat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding: 0 12px;
+      border-right: 1px solid var(--border);
+    }
+
+    .stat:first-child { padding-left: 0; }
+    .stat:last-child  { border-right: none; }
+
+    .stat-value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-weight: 500;
+    }
+
+    /* ── Footer ──────────────────────────────────────── */
+    .footer {
+      margin-top: 28px;
+      font-size: 0.7rem;
+      color: var(--text-3);
+      text-align: center;
+      animation: fadeUp 0.55s ease 0.35s both;
+    }
+
+    .footer a {
+      color: var(--text-2);
+      text-decoration: none;
+    }
+
+    .footer a:hover { color: var(--accent); }
+
+    /* ── Animations ──────────────────────────────────── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Mobile ──────────────────────────────────────── */
+    @media (max-width: 540px) {
+      .card { padding: 28px 20px 24px; }
+      .card-title { font-size: 1.25rem; }
+      .logo-text h1 { font-size: 1.1rem; }
+      .logo-text p { display: none; }
+      .stat-value { font-size: 0.88rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-canvas"></div>
+  <div class="bg-grid"></div>
+
+  <main class="page">
+
+    <!-- Brand -->
+    <div class="logo-wrap">
+      <div class="logo-icon">🔥</div>
+      <div class="logo-text">
+        <h1>SmartFirePredict</h1>
+        <p>AI &amp; IoT Driven Fire Prediction and Prevention System</p>
+      </div>
+    </div>
+
+    <!-- Main card -->
+    <div class="card">
+
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        Demo Offline
+      </div>
+
+      <h2 class="card-title">Public deployment<br /><span>discontinued</span></h2>
+
+      <p class="card-desc">
+        The live demo hosted on AWS EC2 has been shut down due to ongoing infrastructure costs.
+        The full project remains open-source and can be cloned and run locally.
+      </p>
+
+      <div class="info-list">
+        <div class="info-item">
+          <span class="info-item-dot"></span>
+          <span>The <strong>full source code</strong> is publicly available on GitHub under an open-source license.</span>
+        </div>
+        <div class="info-item">
+          <span class="info-item-dot"></span>
+          <span>You can <strong>run it locally</strong> in minutes using Docker Compose or Python — see the README for setup instructions.</span>
+        </div>
+        <div class="info-item">
+          <span class="info-item-dot"></span>
+          <span>No CCTV required — use your laptop webcam via <strong>Browser Camera</strong> to test live fire detection.</span>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <a class="btn btn-primary" href="https://github.com/laeeq-ahmd/SmartFirePredict" target="_blank" rel="noopener">
+          <!-- GitHub icon -->
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+          GitHub Repository
+        </a>
+        <a class="btn btn-secondary" href="https://github.com/laeeq-ahmd/SmartFirePredict#local-setup-recommended-for-full-performance" target="_blank" rel="noopener">
+          <!-- Docs icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          Setup Guide
+        </a>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="stats-row">
+        <div class="stat">
+          <span class="stat-value">YOLOv8</span>
+          <span class="stat-label">AI Model</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">FastAPI</span>
+          <span class="stat-label">Backend</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">ESP32</span>
+          <span class="stat-label">IoT Hardware</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">Docker</span>
+          <span class="stat-label">Deployment</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      Built by <a href="https://github.com/laeeq-ahmd" target="_blank" rel="noopener">Laeeq Ahmed</a>
+      &nbsp;·&nbsp;
+      <a href="mailto:laeeq.amd@gmail.com">laeeq.amd@gmail.com</a>
+    </footer>
+
+  </main>
+
+</body>
+</html>
